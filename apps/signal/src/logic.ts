@@ -32,7 +32,7 @@ export function calculatePert(payload: EstimatePayload): EstimationResult {
  */
 export function calculateEstimate(mode: EstimationMode, payload: any): EstimationResult {
     switch (mode) {
-        case EstimationMode.PERTYBARA:
+        case EstimationMode.PERT:
             return calculatePert(payload as EstimatePayload);
         default:
             throw new Error(`Unsupported estimation mode: ${mode}`);

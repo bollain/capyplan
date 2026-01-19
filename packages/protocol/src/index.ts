@@ -3,13 +3,13 @@ import { z } from 'zod';
 // --- Enums & Types ---
 
 export const EstimationMode = {
-    PERTYBARA: 'PERTYBARA',
+    PERT: 'PERT',
 } as const;
 
 export type EstimationMode = (typeof EstimationMode)[keyof typeof EstimationMode];
 
 export const RoomPhase = {
-    IDLE: 'IDLE',
+    VOTING: 'VOTING',
     ESTIMATING: 'ESTIMATING',
     REVEALED: 'REVEALED',
 } as const;
@@ -19,6 +19,7 @@ export type RoomPhase = (typeof RoomPhase)[keyof typeof RoomPhase];
 export interface Participant {
     id: string;
     name: string;
+    connected?: boolean;
 }
 
 export interface RoomState {
@@ -38,13 +39,14 @@ export const JoinRoomSchema = z.object({
     type: z.literal('JOIN_ROOM'),
     roomId: z.string(),
     name: z.string(),
+    clientId: z.string(),
 });
 
 export const LeaveRoomSchema = z.object({
     type: z.literal('LEAVE_ROOM'),
 });
 
-// For PERTybara, we expect optimistic, mostLikely, pessimistic.
+// For PERT, we expect optimistic, mostLikely, pessimistic.
 // Using a discriminated union or just an object for now, kept extensible.
 export const SubmitEstimateSchema = z.object({
     type: z.literal('SUBMIT_ESTIMATE'),
@@ -90,10 +92,16 @@ export const RoomSnapshotSchema = z.object({
     state: z.object({
         roomId: z.string(),
         leaderId: z.string(),
-        participants: z.array(z.object({ id: z.string(), name: z.string() })),
+        participants: z.array(z.object({
+            id: z.string(),
+            name: z.string(),
+            connected: z.boolean().optional()
+        })),
         phase: z.nativeEnum(RoomPhase),
         estimationMode: z.nativeEnum(EstimationMode),
         availableEstimates: z.array(z.number()).optional(),
+        currentEstimates: z.record(z.any()).optional(),
+        results: z.record(z.any()).optional(),
     }),
 });
 

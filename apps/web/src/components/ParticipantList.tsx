@@ -23,11 +23,13 @@ export default function ParticipantList({ participants, currentUserName, leaderI
                             justifyContent: 'space-between',
                             backgroundColor: isMe ? 'rgba(255, 159, 28, 0.1)' : 'transparent',
                             fontWeight: isMe ? 'bold' : 'normal',
-                            alignItems: 'center'
+                            alignItems: 'center',
+                            opacity: p.connected === false ? 0.5 : 1.0,
                         }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <span>{p.name} {isMe && '(You)'}</span>
                                 {p.id === leaderId && <span title="Leader">👑</span>}
+                                {p.connected === false && <span title="Disconnected" style={{ fontSize: '0.8rem' }}>🔌</span>}
                             </div>
                             {hasEstimated && <span>✅</span>}
                         </li>

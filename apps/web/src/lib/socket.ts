@@ -18,13 +18,16 @@ export class SocketClient {
         return SocketClient.instance;
     }
 
-    private pending: (() => void)[] = [];
+    private pending: { resolve: () => void; reject: (err: Error) => void }[] = [];
 
     connect() {
         if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
             return;
         }
-        this.ws = new WebSocket('ws://localhost:3001');
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.hostname;
+        const port = '3001';
+        this.ws = new WebSocket(`${protocol}//${host}:${port}`);
 
         this.ws.onmessage = (event) => {
             try {
@@ -37,18 +40,41 @@ export class SocketClient {
 
         this.ws.onopen = () => {
             console.log('WS Connected');
-            this.pending.forEach(cb => cb());
+            this.pending.forEach(cb => cb.resolve());
             this.pending = [];
         };
+
         this.ws.onclose = () => console.log('WS Disconnected');
+
+        this.ws.onerror = (err) => {
+            console.error('WS Error', err);
+            this.pending.forEach(cb => cb.reject(new Error('WebSocket Connection Failed')));
+            this.pending = [];
+        };
     }
 
-    waitForOpen(): Promise<void> {
+    waitForOpen(timeoutMs = 5000): Promise<void> {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             return Promise.resolve();
         }
-        return new Promise((resolve) => {
-            this.pending.push(resolve);
+        // If socket failed or closed, reject immediately
+        if (this.ws && (this.ws.readyState === WebSocket.CLOSED || this.ws.readyState === WebSocket.CLOSING)) {
+            return Promise.reject(new Error('Socket is closed'));
+        }
+
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(() => {
+                const idx = this.pending.findIndex(p => p.resolve === resolve);
+                if (idx !== -1) {
+                    this.pending.splice(idx, 1);
+                    reject(new Error('Connection Timeout'));
+                }
+            }, timeoutMs);
+
+            this.pending.push({
+                resolve: () => { clearTimeout(timer); resolve(); },
+                reject: (err) => { clearTimeout(timer); reject(err); }
+            });
         });
     }
 

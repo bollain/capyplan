@@ -31,7 +31,7 @@ export default function EstimationModal({ mode, availableEstimates, onClose, onS
                 <h2>Submit Estimate</h2>
                 <p>Mode: {mode}</p>
 
-                {mode === EstimationMode.PERTYBARA ? (
+                {mode === EstimationMode.PERT ? (
                     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {['optimistic', 'mostLikely', 'pessimistic'].map((field) => (
                             <div key={field}>

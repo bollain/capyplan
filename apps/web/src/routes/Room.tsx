@@ -17,6 +17,7 @@ export default function Room() {
 
     const [roomState, setRoomState] = useState<RoomState | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [connectionError, setConnectionError] = useState<string | null>(null);
 
     // Connect and Join
     useEffect(() => {
@@ -26,17 +27,42 @@ export default function Room() {
         }
 
         let mounted = true;
+        setConnectionError(null);
+
+        // Get or create stable client ID
+        let clientId = localStorage.getItem('capyplan_client_id');
+        if (!clientId) {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                clientId = crypto.randomUUID();
+            } else {
+                // Fallback for environments without crypto.randomUUID
+                clientId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+            }
+            localStorage.setItem('capyplan_client_id', clientId);
+        }
+
+        console.log('Using Client ID:', clientId);
+
         socket.connect();
 
-        socket.waitForOpen().then(() => {
-            if (mounted) {
-                socket.send({
-                    type: 'JOIN_ROOM',
-                    roomId,
-                    name
-                });
-            }
-        });
+        socket.waitForOpen()
+            .then(() => {
+                if (mounted) {
+                    console.log('Sending JOIN_ROOM');
+                    socket.send({
+                        type: 'JOIN_ROOM',
+                        roomId,
+                        name,
+                        clientId: clientId!
+                    });
+                }
+            })
+            .catch(err => {
+                if (mounted) {
+                    console.error('Connection failed:', err);
+                    setConnectionError('Could not connect to server. Please check your network connection or firewall settings (Port 3001).');
+                }
+            });
 
         const cleanup = socket.subscribe((data: ServerMessage) => {
             if (!mounted) return;
@@ -56,12 +82,28 @@ export default function Room() {
         };
     }, [roomId, name, navigate]);
 
+    if (connectionError) {
+        return (
+            <div className="container" style={{ textAlign: 'center', marginTop: '4rem' }}>
+                <h2 style={{ color: '#ff6b6b' }}>Connection Error</h2>
+                <p>{connectionError}</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    style={{ marginTop: '1rem' }}
+                >
+                    Retry Connection
+                </button>
+            </div>
+        );
+    }
+
     if (!roomState) {
         return <div className="container">Loading Room...</div>;
     }
     console.log({ RoomPhase });
 
-    const isLeader = roomState.participants[0]?.name === name; // Simplification: name-based leader check matching server hack
+    const myClientId = localStorage.getItem('capyplan_client_id');
+    const isLeader = roomState.leaderId === myClientId;
 
     return (
         <div className="container">

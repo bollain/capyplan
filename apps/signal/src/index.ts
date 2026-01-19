@@ -13,17 +13,33 @@ import { calculateEstimate } from './logic';
 
 const wss = new WebSocketServer({ port: 3001 });
 
-// In-memory store: RoomID -> RoomState
-const rooms = new Map<string, RoomState>();
+// Extended types for server-side state
+interface ServerParticipant {
+    id: string; // This is the clientId
+    name: string;
+    connected: boolean;
+    lastSeen: number;
+    disconnectTimeout?: NodeJS.Timeout;
+}
+
+interface ServerRoomState extends Omit<RoomState, 'participants'> {
+    participants: ServerParticipant[];
+}
+
+// In-memory store: RoomID -> ServerRoomState
+const rooms = new Map<string, ServerRoomState>();
 
 // Map Socket -> { roomId, userId } for easy cleanup on disconnect
+// userId here refers to the stable clientId
 interface SocketState {
     roomId?: string;
-    userId?: string;
+    userId?: string; // clientId
     ws: WebSocket;
 }
 
 const socketMap = new Map<WebSocket, SocketState>();
+
+const GRACE_PERIOD_MS = 60000; // 60 seconds
 
 console.log('Signal server running on ws://localhost:3001');
 
@@ -47,7 +63,7 @@ wss.on('connection', (ws) => {
     });
 
     ws.on('close', () => {
-        handleDisconnect(ws);
+        handleSocketClose(ws);
     });
 });
 
@@ -57,40 +73,66 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
 
     switch (message.type) {
         case 'JOIN_ROOM': {
-            const { roomId, name } = message;
+            const { roomId, name, clientId } = message;
 
             let room = rooms.get(roomId);
             if (!room) {
                 // Create new room
                 room = {
                     roomId,
-                    leaderId: name, // Simplification: assume name is ID for first user, or generate UUID
+                    leaderId: clientId, // Use clientId as leaderId
                     participants: [],
-                    phase: RoomPhase.IDLE,
-                    estimationMode: EstimationMode.PERTYBARA,
+                    phase: RoomPhase.VOTING,
+                    estimationMode: EstimationMode.PERT,
                 };
                 rooms.set(roomId, room);
             }
 
-            // Generate a random ID for the user if we were building for real, 
-            // but for now simpler to just use a random string or let client send it.
-            // The protocol says client sends name. Let's make an ID.
-            const userId = Math.random().toString(36).substring(7);
+            // Check if participant exists (reconnection)
+            const existingParticipant = room.participants.find(p => p.id === clientId);
 
-            // If room is new, make this user leader
-            if (room.participants.length === 0) {
-                room.leaderId = userId;
+            if (existingParticipant) {
+                // Reconnect
+                existingParticipant.connected = true;
+                existingParticipant.name = name; // Update name just in case
+                existingParticipant.lastSeen = Date.now();
+
+                // Cancel pending removal if any
+                if (existingParticipant.disconnectTimeout) {
+                    clearTimeout(existingParticipant.disconnectTimeout);
+                    existingParticipant.disconnectTimeout = undefined;
+                }
+            } else {
+                // New Join
+                room.participants.push({
+                    id: clientId,
+                    name,
+                    connected: true,
+                    lastSeen: Date.now()
+                });
             }
 
-            room.participants.push({ id: userId, name });
+            // Ensure there is a leader (if leader left and came back, or room was empty)
+            // If the room had no connected participants (but might have disconnected ones), 
+            // valid to ensure leaderId points to someone.
+            // If current leader is gone/removed, we might've already reassigned in disconnect logic.
+            // But if this is a fresh room, init logic handled it.
+
+            // Map socket to this clientId
             socketState.roomId = roomId;
-            socketState.userId = userId;
+            socketState.userId = clientId;
+
+            // Handle duplicate connections: If there was another socket for this clientId, 
+            // it will be handled when that socket closes, or we could force close it here.
+            // For "last wins", we just update our map. The old socket might send a disconnect event,
+            // so we need to be careful not to remove the user if they are actually connected on a new socket.
+            // We can prevent the disconnect logic from removing the user by checking connection state.
 
             broadcastSnapshot(roomId);
             break;
         }
         case 'LEAVE_ROOM':
-            handleDisconnect(ws);
+            handleLeaveRoom(ws);
             break;
 
         case 'SUBMIT_ESTIMATE': {
@@ -154,7 +196,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
                 sendError(ws, 'FORBIDDEN', 'Only leader can request next item');
                 return;
             }
-            room.phase = RoomPhase.IDLE;
+            room.phase = RoomPhase.VOTING;
             room.currentEstimates = undefined;
             room.results = undefined;
             broadcastSnapshot(socketState.roomId);
@@ -178,27 +220,102 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
     }
 }
 
-function handleDisconnect(ws: WebSocket) {
+function handleLeaveRoom(ws: WebSocket) {
     const state = socketMap.get(ws);
     if (!state || !state.roomId || !state.userId) return;
 
     const room = rooms.get(state.roomId);
-    if (room) {
-        room.participants = room.participants.filter(p => p.id !== state.userId);
-        if (room.participants.length === 0) {
-            rooms.delete(state.roomId);
-        } else {
-            // Did the leader leave?
-            if (room.leaderId === state.userId) {
-                // Assign new leader
-                room.leaderId = room.participants[0].id;
-            }
-            broadcastSnapshot(state.roomId);
+    if (!room) return;
+
+    const participant = room.participants.find(p => p.id === state.userId);
+    if (!participant) return;
+
+    // Check if there are other active sockets for this user in this room
+    let hasOtherConnections = false;
+    for (const [otherWs, otherState] of socketMap.entries()) {
+        if (otherWs !== ws &&
+            otherState.roomId === state.roomId &&
+            otherState.userId === state.userId &&
+            otherWs.readyState === WebSocket.OPEN) {
+            hasOtherConnections = true;
+            break;
         }
     }
 
+    if (hasOtherConnections) {
+        // User is still connected on another tab/device.
+        // Do NOT mark as disconnected or start grace period.
+        // Just clear this socket's association.
+        state.roomId = undefined;
+        state.userId = undefined;
+        return;
+    }
+
+    // Capture values for the closure
+    const roomId = state.roomId;
+    const userId = state.userId;
+
+    // Logical leave - treat as disconnect for now, or immediate removal?
+    // If explicit LEAVE_ROOM, maybe we should remove immediately?
+    // Or just mark disconnected? 
+    // Usually LEAVE_ROOM means user navigated away.
+    // Let's use the same graceful logic for now to allow undo (e.g. accidental nav),
+    // OR we can decide LEAVE_ROOM = immediate exit.
+    // Given the issues with StrictMode (mount/unmount), graceful is safer for now.
+
+    participant.connected = false;
+    participant.lastSeen = Date.now();
+
+    broadcastSnapshot(roomId);
+
+    // Start Grace Period
+    if (participant.disconnectTimeout) clearTimeout(participant.disconnectTimeout);
+
+    participant.disconnectTimeout = setTimeout(() => {
+        cleanupParticipant(roomId, userId);
+    }, GRACE_PERIOD_MS);
+
+    // Clear state on socket so we know it's not "in" the room anymore?
+    // If we clear it, RECONNECT (JOIN_ROOM) works fine because it sets it again.
     state.roomId = undefined;
     state.userId = undefined;
+}
+
+function handleSocketClose(ws: WebSocket) {
+    const state = socketMap.get(ws);
+    if (state?.roomId && state?.userId) {
+        // Trigger leave logic
+        // We need to re-fetch state/logic inside handleLeaveRoom logic essentially,
+        // but since we stand to lose the Map entry, we have to run logic first.
+
+        // Reuse logic but ensure we delete map entry at end
+        handleLeaveRoom(ws);
+    }
+    socketMap.delete(ws);
+}
+
+function cleanupParticipant(roomId: string, userId: string) {
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    const participant = room.participants.find(p => p.id === userId);
+    if (!participant || participant.connected) return; // Reconnected?
+
+    room.participants = room.participants.filter(p => p.id !== userId);
+
+    // Clean up current estimates/results
+    if (room.currentEstimates) delete room.currentEstimates[userId];
+    if (room.results) delete room.results[userId];
+
+    if (room.participants.length === 0) {
+        rooms.delete(roomId);
+    } else {
+        if (room.leaderId === userId) {
+            const nextLeader = room.participants.find(p => p.connected) || room.participants[0];
+            if (nextLeader) room.leaderId = nextLeader.id;
+        }
+        broadcastSnapshot(roomId);
+    }
 }
 
 function broadcastSnapshot(roomId: string) {
@@ -207,7 +324,15 @@ function broadcastSnapshot(roomId: string) {
 
     const msg: ServerMessage = {
         type: 'ROOM_SNAPSHOT',
-        state: room,
+        state: {
+            ...room,
+            // Strip server-only fields when sending to client
+            participants: room.participants.map(p => ({
+                id: p.id,
+                name: p.name,
+                connected: p.connected
+            }))
+        },
     };
 
     const payload = JSON.stringify(msg);
