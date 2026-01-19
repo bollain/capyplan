@@ -1,0 +1,111 @@
+import { z } from 'zod';
+
+// --- Enums & Types ---
+
+export const EstimationMode = {
+    PERTYBARA: 'PERTYBARA',
+} as const;
+
+export type EstimationMode = (typeof EstimationMode)[keyof typeof EstimationMode];
+
+export const RoomPhase = {
+    IDLE: 'IDLE',
+    ESTIMATING: 'ESTIMATING',
+    REVEALED: 'REVEALED',
+} as const;
+
+export type RoomPhase = (typeof RoomPhase)[keyof typeof RoomPhase];
+
+export interface Participant {
+    id: string;
+    name: string;
+}
+
+export interface RoomState {
+    roomId: string;
+    leaderId: string;
+    participants: Participant[];
+    phase: RoomPhase;
+    estimationMode: EstimationMode;
+    currentEstimates?: Record<string, any>;
+    results?: Record<string, any>;
+    availableEstimates?: number[];
+}
+
+// --- Messages: Client -> Server ---
+
+export const JoinRoomSchema = z.object({
+    type: z.literal('JOIN_ROOM'),
+    roomId: z.string(),
+    name: z.string(),
+});
+
+export const LeaveRoomSchema = z.object({
+    type: z.literal('LEAVE_ROOM'),
+});
+
+// For PERTybara, we expect optimistic, mostLikely, pessimistic.
+// Using a discriminated union or just an object for now, kept extensible.
+export const SubmitEstimateSchema = z.object({
+    type: z.literal('SUBMIT_ESTIMATE'),
+    itemId: z.string(),
+    estimationMode: z.nativeEnum(EstimationMode),
+    payload: z.object({
+        optimistic: z.number().optional(),
+        mostLikely: z.number().optional(),
+        pessimistic: z.number().optional(),
+        // Allow other fields for future modes
+    }).passthrough(),
+});
+
+export const RequestRevealSchema = z.object({
+    type: z.literal('REQUEST_REVEAL'),
+    itemId: z.string(),
+});
+
+export const RequestNextItemSchema = z.object({
+    type: z.literal('REQUEST_NEXT_ITEM'),
+});
+
+export const UpdateRoomSettingsSchema = z.object({
+    type: z.literal('UPDATE_ROOM_SETTINGS'),
+    availableEstimates: z.array(z.number()),
+});
+
+export const ClientMessageSchema = z.discriminatedUnion('type', [
+    JoinRoomSchema,
+    LeaveRoomSchema,
+    SubmitEstimateSchema,
+    RequestRevealSchema,
+    RequestNextItemSchema,
+    UpdateRoomSettingsSchema,
+]);
+
+export type ClientMessage = z.infer<typeof ClientMessageSchema>;
+
+// --- Messages: Server -> Client ---
+
+export const RoomSnapshotSchema = z.object({
+    type: z.literal('ROOM_SNAPSHOT'),
+    state: z.object({
+        roomId: z.string(),
+        leaderId: z.string(),
+        participants: z.array(z.object({ id: z.string(), name: z.string() })),
+        phase: z.nativeEnum(RoomPhase),
+        estimationMode: z.nativeEnum(EstimationMode),
+        availableEstimates: z.array(z.number()).optional(),
+    }),
+});
+
+export const ErrorMessageSchema = z.object({
+    type: z.literal('ERROR'),
+    code: z.string(),
+    message: z.string(),
+});
+
+export const ServerMessageSchema = z.discriminatedUnion('type', [
+    RoomSnapshotSchema,
+    ErrorMessageSchema,
+]);
+
+export type ServerMessage = z.infer<typeof ServerMessageSchema>;
