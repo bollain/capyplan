@@ -5,10 +5,8 @@ import {
     RoomState,
     EstimationMode,
     RoomPhase,
-    JoinRoomSchema,
     ClientMessage
 } from '@capyplan/protocol';
-import { z } from 'zod';
 import { calculateEstimate } from './logic';
 
 const wss = new WebSocketServer({ port: 3001 });

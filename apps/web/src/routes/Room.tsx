@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { socket } from '../lib/socket.ts';
 import { RoomState, ServerMessage, RoomPhase } from '@capyplan/protocol';
-import EstimationModal from '../components/EstimationModal';
 import RoomHeader from '../components/RoomHeader';
 import CurrentItemArea from '../components/CurrentItemArea';
 import ParticipantList from '../components/ParticipantList';
@@ -16,8 +15,23 @@ export default function Room() {
     const name = location.state?.name; // Simplification: passed from Home
 
     const [roomState, setRoomState] = useState<RoomState | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    // Use ref to keep latest roomState accessible in stable callbacks
+    const roomStateRef = useRef<RoomState | null>(null);
+    roomStateRef.current = roomState;
+
     const [connectionError, setConnectionError] = useState<string | null>(null);
+
+    const handleSubmitEstimate = useCallback((payload: any) => {
+        const state = roomStateRef.current;
+        console.log({ state });
+        if (!state) return;
+        socket.send({
+            type: 'SUBMIT_ESTIMATE',
+            itemId: 'TODO-ITEM-ID',
+            estimationMode: state.estimationMode,
+            payload
+        });
+    }, []); // Stable reference, never changes
 
     // Connect and Join
     useEffect(() => {
@@ -105,6 +119,7 @@ export default function Room() {
     const myClientId = localStorage.getItem('capyplan_client_id');
     const isLeader = roomState.leaderId === myClientId;
 
+
     return (
         <div className="container">
             <RoomHeader
@@ -118,9 +133,11 @@ export default function Room() {
                 <main>
                     <CurrentItemArea
                         phase={roomState.phase}
+                        mode={roomState.estimationMode}
+                        availableEstimates={roomState.availableEstimates}
                         results={roomState.results}
                         participants={roomState.participants}
-                        onOpenEstimateModal={() => setIsModalOpen(true)}
+                        onSubmitEstimate={handleSubmitEstimate}
                     />
 
                     {isLeader && (
@@ -148,23 +165,6 @@ export default function Room() {
                     />
                 </aside>
             </div>
-
-            {isModalOpen && (
-                <EstimationModal
-                    mode={roomState.estimationMode}
-                    availableEstimates={roomState.availableEstimates}
-                    onClose={() => setIsModalOpen(false)}
-                    onSubmit={(payload) => {
-                        socket.send({
-                            type: 'SUBMIT_ESTIMATE',
-                            itemId: 'TODO-ITEM-ID',
-                            estimationMode: roomState.estimationMode,
-                            payload
-                        });
-                        setIsModalOpen(false);
-                    }}
-                />
-            )}
         </div>
     );
 }

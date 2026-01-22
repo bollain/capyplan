@@ -15,7 +15,7 @@ export default function LeaderControls({ onReveal, onNextItem }: Props) {
                     onClick={onNextItem}
                     style={{ backgroundColor: 'var(--color-secondary)' }}
                 >
-                    Next Item
+                    New Estimation
                 </button>
             </div>
         </div>
