@@ -24,10 +24,22 @@ export class SocketClient {
         if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
             return;
         }
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.hostname;
-        const port = '3001';
-        this.ws = new WebSocket(`${protocol}//${host}:${port}`);
+
+        // Production override or Local fallback
+        const envUrl = import.meta.env.VITE_SIGNAL_URL;
+
+        let url;
+        if (envUrl) {
+            url = envUrl;
+        } else {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.hostname;
+            const port = '3001';
+            url = `${protocol}//${host}:${port}`;
+        }
+
+        console.log('Connecting to Signal Server at:', url);
+        this.ws = new WebSocket(url);
 
         this.ws.onmessage = (event) => {
             try {
