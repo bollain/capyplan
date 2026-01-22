@@ -65,8 +65,8 @@ export const RequestRevealSchema = z.object({
     itemId: z.string(),
 });
 
-export const RequestNextItemSchema = z.object({
-    type: z.literal('REQUEST_NEXT_ITEM'),
+export const RequestNextVoteSchema = z.object({
+    type: z.literal('REQUEST_NEXT_VOTE'),
 });
 
 export const UpdateRoomSettingsSchema = z.object({
@@ -79,7 +79,7 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     LeaveRoomSchema,
     SubmitEstimateSchema,
     RequestRevealSchema,
-    RequestNextItemSchema,
+    RequestNextVoteSchema,
     UpdateRoomSettingsSchema,
 ]);
 

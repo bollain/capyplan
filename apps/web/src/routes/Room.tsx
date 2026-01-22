@@ -144,7 +144,7 @@ export default function Room() {
                         <>
                             <LeaderControls
                                 onReveal={() => socket.send({ type: 'REQUEST_REVEAL', itemId: 'TODO' })}
-                                onNextItem={() => socket.send({ type: 'REQUEST_NEXT_ITEM' })}
+                                onNextItem={() => socket.send({ type: 'REQUEST_NEXT_VOTE' })}
                             />
                             <DeckSelector
                                 currentDeck={roomState.availableEstimates}

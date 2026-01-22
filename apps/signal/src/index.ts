@@ -134,7 +134,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             break;
 
         case 'SUBMIT_ESTIMATE': {
-            const { itemId, payload } = message;
+            const { payload } = message;
             if (!socketState.roomId) return;
             const room = rooms.get(socketState.roomId);
             if (!room) return;
@@ -185,7 +185,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             break;
         }
 
-        case 'REQUEST_NEXT_ITEM':
+        case 'REQUEST_NEXT_VOTE':
             if (!socketState.roomId) return;
             const room = rooms.get(socketState.roomId);
             if (!room) return;
