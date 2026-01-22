@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { socket } from '../lib/socket.ts';
 import { RoomState, ServerMessage, RoomPhase } from '@capyplan/protocol';
 import RoomHeader from '../components/RoomHeader';
-import CurrentItemArea from '../components/CurrentItemArea';
+import Stage from '../components/Stage';
 import ParticipantList from '../components/ParticipantList';
 import LeaderControls from '../components/LeaderControls';
 import DeckSelector from '../components/DeckSelector';
@@ -131,7 +131,7 @@ export default function Room() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', marginTop: '2rem' }}>
                 <main>
-                    <CurrentItemArea
+                    <Stage
                         phase={roomState.phase}
                         mode={roomState.estimationMode}
                         availableEstimates={roomState.availableEstimates}
