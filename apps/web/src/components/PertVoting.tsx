@@ -23,11 +23,11 @@ export default function PertVoting({ availableEstimates, onSubmit }: Props) {
     }, [optimistic, mostLikely, pessimistic, onSubmit]);
 
     const renderRow = (label: string, currentVal: number | null, setVal: (v: number) => void) => (
-        <div style={{ marginBottom: '1.5rem' }}>
-            <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: '#aaa', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        <div className="pert-row">
+            <div className="pert-label">
                 {label}
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <div className="card-grid">
                 {availableEstimates.map(val => (
                     <VotingCard
                         key={val}

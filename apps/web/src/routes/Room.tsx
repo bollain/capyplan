@@ -13,6 +13,7 @@ export default function Room() {
     const location = useLocation();
     const navigate = useNavigate();
     const name = location.state?.name; // Simplification: passed from Home
+    const isSpectator = location.state?.isSpectator;
 
     const [roomState, setRoomState] = useState<RoomState | null>(null);
     // Use ref to keep latest roomState accessible in stable callbacks
@@ -67,7 +68,8 @@ export default function Room() {
                         type: 'JOIN_ROOM',
                         roomId,
                         name,
-                        clientId: clientId!
+                        clientId: clientId!,
+                        isSpectator
                     });
                 }
             })
@@ -137,6 +139,7 @@ export default function Room() {
                         availableEstimates={roomState.availableEstimates}
                         results={roomState.results}
                         participants={roomState.participants}
+                        isSpectator={isSpectator}
                         onSubmitEstimate={handleSubmitEstimate}
                     />
 

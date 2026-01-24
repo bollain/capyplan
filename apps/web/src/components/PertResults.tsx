@@ -12,89 +12,79 @@ export default function PertResults({ results, participants }: Props) {
     const [showGuide, setShowGuide] = useState(false);
 
     return (
-        <div className="card" style={{ border: '1px solid var(--color-primary)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div className="card pert-results-card">
+            <table className="pert-table">
                 <thead>
-                    <tr style={{ textAlign: 'left', borderBottom: '1px solid #444' }}>
-                        <th style={{ padding: '0.5rem' }}>Participant</th>
-                        <th style={{ padding: '0.5rem' }}>Score</th>
-                        <th style={{ padding: '0.5rem' }}>Uncertainty (StdDev)</th>
+                    <tr>
+                        <th>Participant</th>
+                        <th>Score</th>
+                        <th>Uncertainty (StdDev)</th>
                     </tr>
                 </thead>
                 <tbody>
                     {participants.map(p => {
                         const result = results[p.id];
-                        if (!result) return null; // or show "No vote"
+                        if (!result) return null;
 
                         const risk = getRiskLevel(Number(result.stdDev));
+                        const roundedResult = Math.round(Number(result.score));
 
                         return (
-                            <tr key={p.id} style={{ borderBottom: '1px solid #333' }}>
-                                <td style={{ padding: '0.5rem' }}>{p.name}</td>
-                                <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>{result.score}</td>
-                                <td style={{ padding: '0.5rem', opacity: 0.7 }}>
-                                    <span style={{
-                                        backgroundColor: risk.color,
-                                        padding: '2px 6px',
-                                        borderRadius: '4px',
-                                        fontSize: '0.7rem',
-                                        color: '#fff',
-                                        fontWeight: 'bold'
-                                    }}>
-                                        {risk.text} (±{Number(result.stdDev).toFixed(2)})
-                                    </span>
+                            <tr key={p.id}>
+                                <td>{p.name}</td>
+                                <td className="pert-score-cell">{roundedResult}</td>
+                                <td className="pert-stddev-cell">
+                                    <div className="stat-value-row">
+                                        <span className="risk-value" style={{ color: risk.color }}>
+                                            ±{Number(result.stdDev).toFixed(2)}
+                                        </span>
+                                        {risk.level !== 'Low' && (
+                                            <span className="risk-badge" style={{ backgroundColor: risk.color }}>
+                                                {risk.level}
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         );
                     })}
                 </tbody>
             </table>
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                <h3 style={{ margin: 0 }}>Team Estimate</h3>
-                <div style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
-                    {avgScore}
+
+            <div className="stat-footer">
+                <div className="stat-block">
+                    <span className="stat-label">Team Average</span>
+                    <span className="stat-value-large">{avgScore}</span>
                 </div>
-                <p style={{ margin: 0, opacity: 0.7 }}>Average PERT Score</p>
-                <div style={{ fontSize: '0.9rem', color: '#aaaaaa', marginTop: '0.5rem' }}>
-                    Team Disagreement: <strong>±{teamStdDev}</strong>
-                    <span style={{
-                        marginLeft: '0.5rem',
-                        backgroundColor: disagreementColor,
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontSize: '0.7rem',
-                        color: '#fff',
-                        fontWeight: 'bold'
-                    }}>
-                        {disagreementLevel} Disagreement
-                    </span>
+
+                <div className="stat-block align-right">
+                    <span className="stat-label">Disagreement</span>
+                    <div className="stat-value-row">
+                        <span className="stat-value-small" style={{ color: disagreementColor }}>
+                            ±{teamStdDev}
+                        </span>
+                        {disagreementLevel !== 'Low' && (
+                            <span className="risk-badge" style={{ backgroundColor: disagreementColor }}>
+                                {disagreementLevel}
+                            </span>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            <div style={{ marginTop: '2rem' }}>
-                <button
-                    onClick={() => setShowGuide(!showGuide)}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#888',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                        textDecoration: 'underline',
-                        padding: 0,
-                    }}
-                >
+            <div className="guide-toggle">
+                <button onClick={() => setShowGuide(!showGuide)}>
                     {showGuide ? 'Hide' : 'Show'} Interpretation Guide
                 </button>
 
                 {showGuide && (
-                    <div style={{ marginTop: '0.5rem', padding: '1rem', backgroundColor: '#333', borderRadius: '8px', fontSize: '0.9rem' }}>
-                        <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>💡 Guide</h4>
-                        <ul style={{ paddingLeft: '1.2rem', margin: 0, lineHeight: '1.4' }}>
-                            <li style={{ marginBottom: '0.5rem' }}>
+                    <div className="guide-panel">
+                        <h4>💡 Guide</h4>
+                        <ul>
+                            <li>
                                 <strong>High Risk 🔴 + Low Disagreement:</strong> The requirement is likely vague. Everyone is unsure in the same way.
                             </li>
-                            <li style={{ marginBottom: '0.5rem' }}>
+                            <li>
                                 <strong>Low Risk 🟢 + High Disagreement:</strong> Team members are confident but have <em>different understandings</em> of the work.
                             </li>
                             <li>

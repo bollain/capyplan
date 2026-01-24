@@ -20,6 +20,7 @@ export interface Participant {
     id: string;
     name: string;
     connected?: boolean;
+    isSpectator?: boolean;
 }
 
 export interface RoomState {
@@ -40,6 +41,7 @@ export const JoinRoomSchema = z.object({
     roomId: z.string(),
     name: z.string(),
     clientId: z.string(),
+    isSpectator: z.boolean(),
 });
 
 export const LeaveRoomSchema = z.object({

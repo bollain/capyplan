@@ -15,6 +15,7 @@ const wss = new WebSocketServer({ port: 3001 });
 interface ServerParticipant {
     id: string; // This is the clientId
     name: string;
+    isSpectator: boolean;
     connected: boolean;
     lastSeen: number;
     disconnectTimeout?: NodeJS.Timeout;
@@ -71,7 +72,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
 
     switch (message.type) {
         case 'JOIN_ROOM': {
-            const { roomId, name, clientId } = message;
+            const { roomId, name, clientId, isSpectator } = message;
 
             let room = rooms.get(roomId);
             if (!room) {
@@ -105,6 +106,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
                 room.participants.push({
                     id: clientId,
                     name,
+                    isSpectator,
                     connected: true,
                     lastSeen: Date.now()
                 });
@@ -328,7 +330,8 @@ function broadcastSnapshot(roomId: string) {
             participants: room.participants.map(p => ({
                 id: p.id,
                 name: p.name,
-                connected: p.connected
+                connected: p.connected,
+                isSpectator: p.isSpectator,
             }))
         },
     };

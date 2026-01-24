@@ -4,6 +4,7 @@ import { socket } from '../lib/socket.ts';
 
 export default function Home() {
     const [name, setName] = useState('');
+    const [isSpectator, setIsSpectator] = useState(false);
     const [roomId, setRoomId] = useState('');
     const navigate = useNavigate();
 
@@ -18,33 +19,39 @@ export default function Home() {
         // We navigate first, and the Room component will handle the JOIN_ROOM message logic
         // passing the name via state or just localstorage. 
         // For simplicity, let's pass name in navigation state.
-        navigate(`/room/${roomId}`, { state: { name } });
+        navigate(`/room/${roomId}`, { state: { name, isSpectator } });
     };
 
     return (
-        <div className="container" style={{ textAlign: 'center', marginTop: '4rem' }}>
+        <div className="container home-container">
             <h1>CapyPlan 🧉</h1>
             <p>Collaborative Estimation Tool</p>
 
-            <div className="card" style={{ maxWidth: '400px', margin: '0 auto' }}>
-                <form onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Your Name</label>
+            <div className="card join-card">
+                <form onSubmit={handleJoin} className="join-form">
+                    <div className="form-group">
+                        <label>Your Name</label>
                         <input
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder="Capybara Joe"
-                            style={{ width: '100%' }}
+                            className="form-input"
                         />
                     </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Room ID</label>
+                    <div className="form-group">
+                        <label>Room ID</label>
                         <input
                             value={roomId}
                             onChange={e => setRoomId(e.target.value)}
                             placeholder="room-123"
-                            style={{ width: '100%' }}
+                            className="form-input"
                         />
+                    </div>
+                    <div className="spectator-toggle" onClick={() => setIsSpectator(!isSpectator)}>
+                        <div className={`toggle-track ${isSpectator ? 'active' : ''}`}>
+                            <div className={`toggle-thumb ${isSpectator ? 'active' : ''}`} />
+                        </div>
+                        <label style={{ cursor: 'pointer', fontSize: '1rem' }}>Join as Spectator</label>
                     </div>
                     <button type="submit" disabled={!name || !roomId}>
                         Join Room
