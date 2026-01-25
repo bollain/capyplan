@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../lib/socket.ts';
+import logo from '../assets/capyplan.png';
 
 export default function Home() {
     const [name, setName] = useState('');
@@ -24,8 +25,11 @@ export default function Home() {
 
     return (
         <div className="container home-container">
-            <h1>CapyPlan 🧉</h1>
-            <p>Collaborative Estimation Tool</p>
+            <div className="logo-header">
+                <img src={logo} alt="CapyPlan Logo" className="logo-img" />
+                <h1>CapyPlan</h1>
+            </div>
+            <p className="text-center">Collaborative Estimation Tool</p>
 
             <div className="card join-card">
                 <form onSubmit={handleJoin} className="join-form">
@@ -58,6 +62,10 @@ export default function Home() {
                     </button>
                 </form>
             </div>
+
+            <footer className="home-footer">
+                Created in Vancouver, Canada 🇨🇦 by <a href="https://github.com/bollain" target="_blank" rel="noopener noreferrer">@bollain</a>
+            </footer>
         </div>
     );
 }

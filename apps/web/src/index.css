@@ -364,3 +364,26 @@ input {
 .toggle-thumb.active {
   left: 28px;
 }
+
+
+.text-center {
+  margin-top: 10px;
+}
+
+/* Home Logo Header */
+.logo-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  h1 {
+    font-size: 3rem;
+  }
+}
+
+.logo-img {
+  padding-top: 8px;
+  transform: scale(0.9);
+  max-width: 100px;
+  /* Removed marginBottom since flex gap handles spacing */
+}
