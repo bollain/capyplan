@@ -12,7 +12,8 @@ export default function Room() {
     const { roomId } = useParams<{ roomId: string }>();
     const location = useLocation();
     const navigate = useNavigate();
-    const name = location.state?.name; // Simplification: passed from Home
+    // Try state first, then fallback to persisted name
+    const name = location.state?.name || localStorage.getItem('capyplan_username');
     const isSpectator = location.state?.isSpectator;
 
     const [roomState, setRoomState] = useState<RoomState | null>(null);

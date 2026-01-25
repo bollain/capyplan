@@ -17,9 +17,10 @@ export default function Home() {
         e.preventDefault();
         if (!name || !roomId) return;
 
+        // Save name for persistence on refresh
+        localStorage.setItem('capyplan_username', name);
+
         // We navigate first, and the Room component will handle the JOIN_ROOM message logic
-        // passing the name via state or just localstorage. 
-        // For simplicity, let's pass name in navigation state.
         navigate(`/room/${roomId}`, { state: { name, isSpectator } });
     };
 
