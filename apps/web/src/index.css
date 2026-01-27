@@ -557,6 +557,41 @@ input {
   margin-bottom: 5px;
 }
 
+
+/* Capybara Personas */
+.persona-section {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  text-align: center;
+}
+
+.persona-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.persona-emoji {
+  font-size: 1.5rem;
+}
+
+.persona-name {
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.persona-desc {
+  font-style: italic;
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 600px) {
   .logo-header {

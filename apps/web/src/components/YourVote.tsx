@@ -16,24 +16,49 @@ interface Props {
 export default function YourVote({ result, estimate, phase }: Props) {
     if (phase !== 'REVEALED' || !result) return null;
 
-    const roundedScore = Math.round(result.score);
-    const uncertainty = Number(result.stdDev || 0);
-    const risk = getRiskLevel(uncertainty);
+
+    const risk = getRiskLevel(Number(result.stdDev));
+
+    const getPersona = (riskLevel: string) => {
+        switch (riskLevel) {
+            case 'High':
+                return {
+                    name: 'Chaos Capy',
+                    emoji: '🎲',
+                    desc: 'Is the afterparty.'
+                };
+            case 'Medium':
+                return {
+                    name: 'Cautious Capy',
+                    emoji: '🤔',
+                    desc: 'Checks the vibe, then commits.'
+                };
+            case 'Low':
+            default:
+                return {
+                    name: 'Chill Capy',
+                    emoji: '😌',
+                    desc: 'Unbothered. Unrushed.'
+                };
+        }
+    };
+
+    const persona = getPersona(risk.level);
 
     return (
         <div className="card your-vote-card">
             <h3>Your Vote</h3>
             <div className="your-vote-primary">
                 <div className="your-vote-stat">
+                    <span className="your-vote-score">{Math.round(Number(result.score))}</span>
                     <span className="your-vote-label">Score</span>
-                    <span className="your-vote-score">{roundedScore}</span>
                 </div>
 
                 <div className="your-vote-stat">
-                    <span className="your-vote-label">Uncertainty (StdDev)</span>
-                    <span className="your-vote-stddev" style={{ color: risk.color, fontWeight: 'bold' }}>
-                        ±{uncertainty.toFixed(2)}
+                    <span className="your-vote-stddev" style={{ color: risk.color }}>
+                        ±{Number(result.stdDev).toFixed(1)}
                     </span>
+                    <span className="your-vote-label">Uncertainty</span>
                 </div>
             </div>
 
@@ -53,6 +78,14 @@ export default function YourVote({ result, estimate, phase }: Props) {
                     </div>
                 </div>
             )}
+
+            <div className="persona-section" style={{ borderColor: risk.color, backgroundColor: `${risk.color}15` }}>
+                <div className="persona-header">
+                    <span className="persona-emoji">{persona.emoji}</span>
+                    <span className="persona-name" style={{ color: risk.color }}>{persona.name}</span>
+                </div>
+                <div className="persona-desc">"{persona.desc}"</div>
+            </div>
         </div>
     );
 }
