@@ -1,4 +1,5 @@
 import { RoomPhase, EstimationMode } from '@capyplan/protocol';
+import logo from '../assets/capyplan.png';
 
 interface Props {
     roomId: string;
@@ -9,27 +10,24 @@ interface Props {
 
 export default function RoomHeader({ roomId, estimationMode, phase, userName }: Props) {
     return (
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div>
-                    <h1 style={{ margin: 0 }}>Room: {roomId}</h1>
-                    <span style={{
-                        backgroundColor: '#333',
-                        padding: '0.2rem 0.5rem',
-                        borderRadius: '4px',
-                        fontSize: '0.8rem',
-                        display: 'inline-block',
-                        marginTop: '0.5rem'
-                    }}>
+        <header className="room-header">
+            <div className="header-left">
+                <div className="brand-container">
+                    <img src={logo} alt="CapyPlan" className="brand-logo" />
+                    <span className="brand-text">CapyPlan</span>
+                </div>
+                <div className="room-info">
+                    <h1>Room: {roomId}</h1>
+                    <span className="mode-badge">
                         Mode: {estimationMode}
                     </span>
                 </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-                <div style={{ marginBottom: '0.5rem' }}>
-                    👤 <strong>{userName}</strong>
+            <div className="header-right">
+                <div className="user-info">
+                    🐹 <strong>{userName}</strong>
                 </div>
-                <div style={{ fontSize: '0.9rem' }}>
+                <div className="status-info">
                     Status: <strong>{phase}</strong>
                 </div>
             </div>

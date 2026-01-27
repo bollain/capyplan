@@ -7,16 +7,17 @@ interface Props {
     mode: EstimationMode;
     availableEstimates?: number[];
     results?: RoomState['results'];
+    currentEstimates?: RoomState['currentEstimates'];
     participants: RoomState['participants'];
     isSpectator: boolean;
     onSubmitEstimate: (payload: any) => void;
 }
 
-export default function Stage({ phase, mode, availableEstimates, results, participants, isSpectator, onSubmitEstimate }: Props) {
+export default function Stage({ phase, mode, availableEstimates, results, currentEstimates, participants, isSpectator, onSubmitEstimate }: Props) {
     return (
         <div className="card">
             {phase === RoomPhase.REVEALED && results ? (
-                <EstimationResults results={results} participants={participants} estimationMode={mode} />
+                <EstimationResults results={results} currentEstimates={currentEstimates} participants={participants} estimationMode={mode} />
             ) : (
                 <>
                     {isSpectator ? (

@@ -7,6 +7,7 @@ import Stage from '../components/Stage';
 import ParticipantList from '../components/ParticipantList';
 import LeaderControls from '../components/LeaderControls';
 import DeckSelector from '../components/DeckSelector';
+import YourVote from '../components/YourVote';
 
 export default function Room() {
     const { roomId } = useParams<{ roomId: string }>();
@@ -122,6 +123,9 @@ export default function Room() {
     const myClientId = localStorage.getItem('capyplan_client_id');
     const isLeader = roomState.leaderId === myClientId;
 
+    // Safety check for myClientId
+    const myResult = (myClientId && roomState.results) ? roomState.results[myClientId] : null;
+    const myEstimate = (myClientId && roomState.currentEstimates) ? roomState.currentEstimates[myClientId] : null;
 
     return (
         <div className="container">
@@ -139,6 +143,7 @@ export default function Room() {
                         mode={roomState.estimationMode}
                         availableEstimates={roomState.availableEstimates}
                         results={roomState.results}
+                        currentEstimates={roomState.currentEstimates}
                         participants={roomState.participants}
                         isSpectator={isSpectator}
                         onSubmitEstimate={handleSubmitEstimate}
@@ -166,6 +171,11 @@ export default function Room() {
                         currentUserName={name}
                         leaderId={roomState.leaderId}
                         currentEstimates={roomState.currentEstimates}
+                    />
+                    <YourVote
+                        result={myResult}
+                        estimate={myEstimate}
+                        phase={roomState.phase}
                     />
                 </aside>
             </div>

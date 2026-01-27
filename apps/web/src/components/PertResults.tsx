@@ -4,10 +4,11 @@ import { calculateTeamStats, getRiskLevel } from "../lib/pert";
 
 interface Props {
     results: NonNullable<RoomState['results']>;
+    currentEstimates: RoomState['currentEstimates'];
     participants: RoomState['participants'];
 }
 
-export default function PertResults({ results, participants }: Props) {
+export default function PertResults({ results, currentEstimates, participants }: Props) {
     const { avgScore, teamStdDev, disagreementLevel, disagreementColor } = calculateTeamStats(results);
     const [showGuide, setShowGuide] = useState(false);
 
@@ -24,15 +25,26 @@ export default function PertResults({ results, participants }: Props) {
                 <tbody>
                     {participants.map(p => {
                         const result = results[p.id];
+                        const estimate = currentEstimates?.[p.id];
                         if (!result) return null;
 
                         const risk = getRiskLevel(Number(result.stdDev));
                         const roundedResult = Math.round(Number(result.score));
 
+                        const raw = estimate as { optimistic: number, mostLikely: number, pessimistic: number } | undefined;
+                        const tooltip = raw
+                            ? `Optimistic: ${raw.optimistic} | Most Likely: ${raw.mostLikely} | Pessimistic: ${raw.pessimistic}`
+                            : undefined;
+
                         return (
                             <tr key={p.id}>
                                 <td>{p.name}</td>
-                                <td className="pert-score-cell">{roundedResult}</td>
+                                <td
+                                    className={`pert-score-cell ${tooltip ? 'has-tooltip' : ''}`}
+                                    data-tooltip={tooltip}
+                                >
+                                    {roundedResult}
+                                </td>
                                 <td className="pert-stddev-cell">
                                     <div className="stat-value-row">
                                         <span className="risk-value" style={{ color: risk.color }}>
