@@ -1,4 +1,4 @@
-# 🍐 CapyPlan
+# CapyPlan
 
 **CapyPlan** is a collaborative estimation tool designed to help engineering teams estimate work with clarity and confidence.
 
