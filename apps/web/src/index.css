@@ -477,132 +477,246 @@ input {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #333;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
-.brand-container {
+/* Brand Link - De-emphasized */
+.brand-link {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border-right: 1px solid #444;
-  padding-right: 1.5rem;
+  text-decoration: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
 
-.brand-logo {
-  width: 90px;
-  height: 58px;
+.brand-link:hover {
+  opacity: 1;
 }
 
-.brand-text {
-  font-weight: bold;
-  font-size: 2.2rem;
-  letter-spacing: 0.5px;
+.brand-logo-small {
+  width: 30px;
+  height: auto;
 }
 
-.room-info h1 {
+.brand-text-small {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.divider-vertical {
+  width: 1px;
+  height: 24px;
+  background-color: #444;
+}
+
+/* Room Title Group */
+.room-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.room-title {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
-.mode-badge {
-  background-color: #333;
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  display: inline-block;
-  margin-top: 0.2rem;
+.room-meta {
+  font-size: 0.9rem;
+  color: #888;
+  font-weight: 500;
 }
 
+/* Header Right */
 .header-right {
-  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.user-info {
-  margin-bottom: 0.5rem;
-}
-
-.status-info {
+/* User Pill */
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
   font-size: 0.9rem;
 }
 
-/* Tooltips */
-.has-tooltip {
-  position: relative;
-  cursor: help;
-  text-decoration: underline dotted #666;
+.user-avatar {
+  font-size: 1rem;
 }
 
-.has-tooltip:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
-  color: #fff;
-  padding: 0.5rem 0.8rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  white-space: nowrap;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  z-index: 10;
-  pointer-events: none;
-  font-weight: normal;
-  border: 1px solid #555;
-  margin-bottom: 5px;
+.user-name {
+  font-weight: 600;
 }
 
-
-/* Capybara Personas */
-.persona-section {
-  margin-top: 1rem;
-  padding: 0.8rem;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  text-align: center;
-}
-
-.persona-header {
+/* Status Pill */
+.status-pill {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-  margin-bottom: 0.3rem;
-}
-
-.persona-emoji {
-  font-size: 1.5rem;
-}
-
-.persona-name {
-  font-weight: bold;
-  font-size: 1.1rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  background-color: #333;
+  color: #ccc;
 }
 
-.persona-desc {
-  font-style: italic;
-  font-size: 0.9rem;
-  color: #bbb;
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #666;
 }
 
-/* Mobile Responsiveness */
+/* Status variants */
+.status-voting .status-dot {
+  background-color: var(--color-secondary);
+  box-shadow: 0 0 8px rgba(46, 196, 182, 0.4);
+}
+
+.status-voting {
+  background-color: rgba(46, 196, 182, 0.1);
+  color: var(--color-secondary);
+  border: 1px solid rgba(46, 196, 182, 0.2);
+}
+
+.status-revealed .status-dot {
+  background-color: var(--color-primary);
+}
+
+.status-revealed {
+  background-color: rgba(255, 159, 28, 0.1);
+  color: var(--color-primary);
+}
+
+.status-revealed .status-label {
+  color: var(--color-primary);
+}
+
+/* Soft Share Button */
+.share-btn-soft {
+  background: transparent;
+  color: #888;
+  border: 1px solid #444;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.share-btn-soft:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: #666;
+}
+
+/* Session Status Component */
+.session-status {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.status-content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.status-label {
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ddd;
+}
+
+.status-help {
+  font-size: 0.75rem;
+  color: #888;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #666;
+  flex-shrink: 0;
+}
+
+/* Status variants */
+.section-status.status-voting {
+  border-color: rgba(46, 196, 182, 0.2);
+  background-color: rgba(46, 196, 182, 0.05);
+}
+
+.status-voting .status-dot {
+  background-color: var(--color-secondary);
+  box-shadow: 0 0 10px rgba(46, 196, 182, 0.6);
+  animation: pulse 2s infinite;
+}
+
+.status-voting .status-label {
+  color: var(--color-secondary);
+}
+
+.status-revealed .status-dot {
+  background-color: var(--color-primary);
+}
+
+.status-revealed .status-label {
+  color: var(--color-primary);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 196, 182, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(46, 196, 182, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 196, 182, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-dot {
+    animation: none !important;
+  }
+}
+
 @media (max-width: 600px) {
-  .logo-header {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .logo-header h1 {
-    font-size: 2rem;
-  }
-
   .room-header {
     flex-direction: column;
     align-items: flex-start;
@@ -610,38 +724,111 @@ input {
   }
 
   .header-left {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .brand-container {
-    border-right: none;
-    padding-right: 0;
-    margin-bottom: 0.5rem;
+    width: 100%;
+    justify-content: space-between;
   }
 
   .header-right {
-    text-align: left;
     width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .room-title {
+    font-size: 1.2rem;
+  }
+
+  .share-btn-soft {
+    width: 100%;
+    justify-content: center;
     margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid #333;
+  }
+}
+
+/* Join Room */
+.join-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+
+/* Share Button */
+.share-btn {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+}
+
+/* Join Room Polish */
+.join-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.join-logo {
+  width: 80px;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.join-title {
+  text-align: center;
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.spectator-label {
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+  border: 1px solid #444;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
   }
 
-  .stat-footer {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
+}
 
-  .stat-block.align-right {
-    align-items: flex-start;
-  }
+/* Room Header Refinements */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
 
-  .pert-table th,
-  .pert-table td {
-    padding: 0.25rem;
-    font-size: 0.9rem;
-  }
+.share-btn {
+  background-color: transparent;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  transition: all 0.2s;
+}
+
+.share-btn:hover {
+  background-color: var(--color-primary);
+  color: #000;
 }

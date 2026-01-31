@@ -8,14 +8,16 @@ import ParticipantList from '../components/ParticipantList';
 import LeaderControls from '../components/LeaderControls';
 import DeckSelector from '../components/DeckSelector';
 import YourVote from '../components/YourVote';
+import JoinRoom from '../components/JoinRoom';
 
 export default function Room() {
     const { roomId } = useParams<{ roomId: string }>();
     const location = useLocation();
     const navigate = useNavigate();
     // Try state first, then fallback to persisted name
-    const name = location.state?.name || localStorage.getItem('capyplan_username');
-    const isSpectator = location.state?.isSpectator;
+    const [name, setName] = useState(location.state?.name || localStorage.getItem('capyplan_username') || '');
+    const [isSpectator, setIsSpectator] = useState(location.state?.isSpectator || false);
+    const [isJoined, setIsJoined] = useState(!!name);
 
     const [roomState, setRoomState] = useState<RoomState | null>(null);
     // Use ref to keep latest roomState accessible in stable callbacks
@@ -38,8 +40,7 @@ export default function Room() {
 
     // Connect and Join
     useEffect(() => {
-        if (!roomId || !name) {
-            navigate('/');
+        if (!roomId || !isJoined || !name) {
             return;
         }
 
@@ -98,7 +99,7 @@ export default function Room() {
             cleanup();
             socket.send({ type: 'LEAVE_ROOM' });
         };
-    }, [roomId, name, navigate]);
+    }, [roomId, name, isJoined, navigate]); // Re-run if joined status changes
 
     if (connectionError) {
         return (
@@ -115,6 +116,21 @@ export default function Room() {
         );
     }
 
+    if (!isJoined) {
+        return (
+            <JoinRoom
+                roomId={roomId!}
+                startName={name}
+                onJoin={(newName, spectator) => {
+                    localStorage.setItem('capyplan_username', newName);
+                    setName(newName);
+                    setIsSpectator(spectator);
+                    setIsJoined(true);
+                }}
+            />
+        );
+    }
+
     if (!roomState) {
         return <div className="container">Loading Room...</div>;
     }
@@ -127,6 +143,9 @@ export default function Room() {
     const myResult = (myClientId && roomState.results) ? roomState.results[myClientId] : null;
     const myEstimate = (myClientId && roomState.currentEstimates) ? roomState.currentEstimates[myClientId] : null;
 
+    const voteCount = roomState.currentEstimates ? Object.keys(roomState.currentEstimates).length : 0;
+    const totalParticipants = roomState.participants ? roomState.participants.length : 0;
+
     return (
         <div className="container">
             <RoomHeader
@@ -134,6 +153,8 @@ export default function Room() {
                 estimationMode={roomState.estimationMode}
                 phase={roomState.phase}
                 userName={name}
+                voteCount={voteCount}
+                totalParticipants={totalParticipants}
             />
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', marginTop: '2rem' }}>
