@@ -37,7 +37,22 @@ export default function RoomHeader({ roomId, estimationMode, phase, userName, vo
                 <div className="divider-vertical"></div>
                 <div className="room-title-group">
                     <h1 className="room-title">{roomId}</h1>
-                    <span className="room-meta">&nbsp;&middot;&nbsp; {estimationMode}</span>
+                    <span className="room-meta">
+                        &nbsp;&middot;&nbsp; Mode:&nbsp;
+                        {estimationMode === 'PERT' ? (
+                            <a
+                                href="https://en.wikipedia.org/wiki/Program_evaluation_and_review_technique"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="meta-link"
+                                title="Learn about PERT on Wikipedia"
+                            >
+                                {estimationMode}
+                            </a>
+                        ) : (
+                            estimationMode
+                        )}
+                    </span>
                 </div>
             </div>
             <div className="header-right">
@@ -57,7 +72,7 @@ export default function RoomHeader({ roomId, estimationMode, phase, userName, vo
                     className="share-btn-soft"
                     title="Copy Link"
                 >
-                    Share
+                    <span className="btn-icon">+</span> Invite Players
                 </button>
             </div>
         </header>

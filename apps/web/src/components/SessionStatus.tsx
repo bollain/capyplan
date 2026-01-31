@@ -15,7 +15,7 @@ export default function SessionStatus({ phase, voteCount, totalParticipants }: P
 
     if (isVoting) {
         label = 'Voting';
-        helpText = `${voteCount}/${totalParticipants} voted`;
+        helpText = `${voteCount} of ${totalParticipants} voted`;
     } else if (isRevealed) {
         label = 'Revealed';
         helpText = 'Estimates shown';
