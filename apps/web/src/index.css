@@ -53,6 +53,59 @@ input {
   box-sizing: border-box;
 }
 
+/* Button Variants */
+.btn-prominent {
+  background-color: var(--color-secondary);
+  color: #000;
+  box-shadow: 0 4px 14px rgba(46, 196, 182, 0.4);
+  transform: translateY(-1px);
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  animation: pulse-shadow 2s infinite;
+}
+
+@keyframes pulse-shadow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 196, 182, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(46, 196, 182, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 196, 182, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-prominent {
+    animation: none;
+  }
+}
+
+.btn-prominent:hover {
+  background-color: #3adacb;
+  box-shadow: 0 6px 20px rgba(46, 196, 182, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-waiting {
+  background-color: #333;
+  color: #fff;
+  cursor: not-allowed;
+  border: 1px solid #444;
+}
+
+.btn-secondary {
+  background-color: #444;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background-color: #555;
+}
+
 .card {
   background-color: var(--color-surface);
   padding: 1.5rem;
@@ -231,6 +284,16 @@ input {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  overflow: hidden;
+  /* Ensure it stays within bounds */
+}
+
+.participant-info>span:first-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 15ch;
+  /* Rough character limit before truncating, adjust as needed */
 }
 
 /* Voting Card */
@@ -281,14 +344,50 @@ input {
   flex-wrap: wrap;
 }
 
-/* Leader Controls */
-.leader-card {
+/* Room Actions Controls */
+.room-actions-card {
   border: 1px solid var(--color-primary);
 }
 
-.leader-actions {
+.room-actions-row {
   display: flex;
   gap: 1rem;
+  justify-content: center;
+  /* Center standard actions */
+}
+
+/* Default/Standard Action State (Ready/Revealed) */
+.action-card-standard {
+  padding: 1rem !important;
+  /* Slightly less than default 1.5rem */
+}
+
+/* Compact Actions State */
+.action-card-compact {
+  padding: 0.5rem 0.75rem !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Center since no title */
+}
+
+.action-card-compact .room-actions-row {
+  width: 100%;
+  justify-content: center;
+}
+
+.action-card-compact .btn-waiting {
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  width: 100%;
+  /* Fill the card in compact mode */
+  max-width: 400px;
+}
+
+.action-card-compact .btn-waiting {
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  width: auto;
 }
 
 .btn-secondary {
@@ -459,6 +558,67 @@ input {
   font-weight: bold;
 }
 
+/* Persona Section */
+.persona-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.persona-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.persona-emoji {
+  font-size: 1.5rem;
+}
+
+.persona-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.persona-desc {
+  font-style: italic;
+  color: #ccc;
+  font-size: 0.95rem;
+}
+
+/* Risk Variants */
+.risk-high {
+  border-color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.risk-medium {
+  border-color: #ff9800;
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.risk-low {
+  border-color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.risk-text-high {
+  color: #f44336;
+}
+
+.risk-text-medium {
+  color: #ff9800;
+}
+
+.risk-text-low {
+  color: #4caf50;
+}
+
+
 .your-vote-stat {
   display: flex;
   flex-direction: column;
@@ -621,6 +781,10 @@ input {
 
 .user-name {
   font-weight: 600;
+  max-width: 15ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Status Pill */
@@ -977,7 +1141,7 @@ input {
     margin-bottom: 1.5rem;
   }
 
-  .brand-text-small {
+  .divider-vertical {
     display: none;
   }
 

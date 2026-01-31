@@ -55,7 +55,7 @@ export default function YourVote({ result, estimate, phase }: Props) {
                 </div>
 
                 <div className="your-vote-stat">
-                    <span className="your-vote-stddev" style={{ color: risk.color }}>
+                    <span className={`your-vote-stddev risk-text-${risk.level.toLowerCase()}`}>
                         ±{Number(result.stdDev).toFixed(1)}
                     </span>
                     <span className="your-vote-label">Uncertainty</span>
@@ -79,10 +79,10 @@ export default function YourVote({ result, estimate, phase }: Props) {
                 </div>
             )}
 
-            <div className="persona-section" style={{ borderColor: risk.color, backgroundColor: `${risk.color}15` }}>
+            <div className={`persona-section risk-${risk.level.toLowerCase()}`}>
                 <div className="persona-header">
                     <span className="persona-emoji">{persona.emoji}</span>
-                    <span className="persona-name" style={{ color: risk.color }}>{persona.name}</span>
+                    <span className={`persona-name risk-text-${risk.level.toLowerCase()}`}>{persona.name}</span>
                 </div>
                 <div className="persona-desc">"{persona.desc}"</div>
             </div>

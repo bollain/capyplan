@@ -163,11 +163,11 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             console.log(`Leader is ${room.leaderId}`);
             console.log(`Current phase is ${room.phase}`);
 
-            //Verify sender is leader
-            if (room.leaderId !== socketState.userId) {
-                sendError(ws, 'FORBIDDEN', 'Only leader can reveal');
-                return;
-            }
+            console.log(`Reveal requested by ${socketState.userId}`);
+            console.log(`Leader is ${room.leaderId}`);
+            console.log(`Current phase is ${room.phase}`);
+
+            // Permission check removed: Any participant can reveal
 
             room.phase = RoomPhase.REVEALED;
 
@@ -192,11 +192,8 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             if (!socketState.roomId) return;
             const room = rooms.get(socketState.roomId);
             if (!room) return;
-            //Verify sender is leader
-            if (room.leaderId !== socketState.userId) {
-                sendError(ws, 'FORBIDDEN', 'Only leader can request next item');
-                return;
-            }
+
+            // Permission check removed: Any participant can request next item
             room.phase = RoomPhase.VOTING;
             room.currentEstimates = undefined;
             room.results = undefined;

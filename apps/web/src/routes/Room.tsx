@@ -5,7 +5,7 @@ import { RoomState, ServerMessage, RoomPhase } from '@capyplan/protocol';
 import RoomHeader from '../components/RoomHeader';
 import Stage from '../components/Stage';
 import ParticipantList from '../components/ParticipantList';
-import LeaderControls from '../components/LeaderControls';
+import RoomActions from '../components/RoomActions';
 import DeckSelector from '../components/DeckSelector';
 import YourVote from '../components/YourVote';
 import JoinRoom from '../components/JoinRoom';
@@ -171,12 +171,16 @@ export default function Room() {
                             onSubmitEstimate={handleSubmitEstimate}
                         />
 
+                        <RoomActions
+                            onReveal={() => socket.send({ type: 'REQUEST_REVEAL', itemId: 'TODO' })}
+                            onNextItem={() => socket.send({ type: 'REQUEST_NEXT_VOTE' })}
+                            phase={roomState.phase}
+                            voteCount={voteCount}
+                            totalParticipants={totalParticipants}
+                        />
+
                         {isLeader && (
                             <>
-                                <LeaderControls
-                                    onReveal={() => socket.send({ type: 'REQUEST_REVEAL', itemId: 'TODO' })}
-                                    onNextItem={() => socket.send({ type: 'REQUEST_NEXT_VOTE' })}
-                                />
                                 <DeckSelector
                                     currentDeck={roomState.availableEstimates}
                                     onUpdateDeck={(availableEstimates) =>
