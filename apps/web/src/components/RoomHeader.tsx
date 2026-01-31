@@ -7,6 +7,7 @@ import SessionStatus from './SessionStatus';
 
 interface Props {
     roomId: string;
+    roomName?: string;
     estimationMode: EstimationMode;
     phase: RoomPhase;
     userName?: string;
@@ -14,7 +15,7 @@ interface Props {
     totalParticipants: number;
 }
 
-export default function RoomHeader({ roomId, estimationMode, phase, userName, voteCount, totalParticipants }: Props) {
+export default function RoomHeader({ roomId, roomName, estimationMode, phase, userName, voteCount, totalParticipants }: Props) {
     const [showToast, setShowToast] = useState(false);
 
     const handleShare = () => {
@@ -29,14 +30,20 @@ export default function RoomHeader({ roomId, estimationMode, phase, userName, vo
                 isVisible={showToast}
                 onClose={() => setShowToast(false)}
             />
-            <div className="header-left">
+
+            <div className="header-brand">
                 <Link to="/" className="brand-link">
                     <img src={logo} alt="CapyPlan" className="brand-logo-small" />
                     <span className="brand-text-small">CapyPlan</span>
                 </Link>
                 <div className="divider-vertical"></div>
+            </div>
+
+            <div className="header-room-info">
                 <div className="room-title-group">
-                    <h1 className="room-title">{roomId}</h1>
+                    <h1 className="room-title" title={`ID: ${roomId} | Name: ${roomName || 'Untitled'}`}>
+                        {roomName || roomId}
+                    </h1>
                     <span className="room-meta">
                         &nbsp;&middot;&nbsp; Mode:&nbsp;
                         {estimationMode === 'PERT' ? (
@@ -55,7 +62,8 @@ export default function RoomHeader({ roomId, estimationMode, phase, userName, vo
                     </span>
                 </div>
             </div>
-            <div className="header-right">
+
+            <div className="header-actions">
                 <div className="user-pill">
                     <span className="user-avatar">🐹</span>
                     <span className="user-name">{userName}</span>

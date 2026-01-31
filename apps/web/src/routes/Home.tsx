@@ -6,7 +6,8 @@ import logo from '../assets/capyplan.png';
 export default function Home() {
     const [name, setName] = useState('');
     const [isSpectator, setIsSpectator] = useState(false);
-    const [roomId, setRoomId] = useState('');
+    const [roomInput, setRoomInput] = useState(''); // Can be name (for create) or ID (for join)
+    const [isCreating, setIsCreating] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -15,13 +16,27 @@ export default function Home() {
 
     const handleJoin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name || !roomId) return;
+        if (!name || !roomInput) return;
 
         // Save name for persistence on refresh
         localStorage.setItem('capyplan_username', name);
 
-        // We navigate first, and the Room component will handle the JOIN_ROOM message logic
-        navigate(`/room/${roomId}`, { state: { name, isSpectator } });
+        let targetRoomId = roomInput;
+        let roomName: string | undefined = undefined;
+
+        if (isCreating) {
+            // If creating, generate a random ID and use input as name
+            targetRoomId = crypto.randomUUID();
+            roomName = roomInput;
+        }
+
+        navigate(`/room/${targetRoomId}`, {
+            state: {
+                name,
+                isSpectator,
+                roomName // Pass roomName to the route state
+            }
+        });
     };
 
     return (
@@ -44,13 +59,26 @@ export default function Home() {
                         />
                     </div>
                     <div className="form-group">
-                        <label>Room ID</label>
+                        <label>
+                            {isCreating ? 'Room Name' : 'Room ID'}
+                        </label>
                         <input
-                            value={roomId}
-                            onChange={e => setRoomId(e.target.value)}
-                            placeholder="room-123"
+                            value={roomInput}
+                            onChange={e => setRoomInput(e.target.value)}
+                            placeholder={isCreating ? "Sprint Planning 34" : "paste-room-id-here"}
                             className="form-input"
                         />
+                        <div style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
+                            {isCreating ? (
+                                <span onClick={() => setIsCreating(false)} style={{ cursor: 'pointer', textDecoration: 'underline', color: '#888' }}>
+                                    or join existing room by ID
+                                </span>
+                            ) : (
+                                <span onClick={() => setIsCreating(true)} style={{ cursor: 'pointer', textDecoration: 'underline', color: '#888' }}>
+                                    or create a new room
+                                </span>
+                            )}
+                        </div>
                     </div>
                     <div className="spectator-toggle" onClick={() => setIsSpectator(!isSpectator)}>
                         <div className={`toggle-track ${isSpectator ? 'active' : ''}`}>
@@ -58,8 +86,8 @@ export default function Home() {
                         </div>
                         <label style={{ cursor: 'pointer', fontSize: '1rem' }}>Join as Spectator</label>
                     </div>
-                    <button type="submit" disabled={!name || !roomId}>
-                        Join Room
+                    <button type="submit" disabled={!name || !roomInput}>
+                        {isCreating ? 'Create Room' : 'Join Room'}
                     </button>
                 </form>
             </div>

@@ -1,12 +1,13 @@
 {
     "name": "@capyplan/protocol",
     "version": "0.0.1",
-    "main": "./src/index.ts",
-    "module": "./src/index.ts",
+    "type": "module",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
     "exports": {
-        ".": "./src/index.ts"
+        ".": "./dist/index.js"
     },
-    "types": "./src/index.ts",
+    "types": "./dist/index.d.ts",
     "scripts": {
         "build": "tsc"
     },

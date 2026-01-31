@@ -66,10 +66,10 @@ export default function Room() {
         socket.waitForOpen()
             .then(() => {
                 if (mounted) {
-                    console.log('Sending JOIN_ROOM');
                     socket.send({
                         type: 'JOIN_ROOM',
                         roomId,
+                        roomName: location.state?.roomName, // Pass roomName if available
                         name,
                         clientId: clientId!,
                         isSpectator
@@ -103,12 +103,12 @@ export default function Room() {
 
     if (connectionError) {
         return (
-            <div className="container" style={{ textAlign: 'center', marginTop: '4rem' }}>
-                <h2 style={{ color: '#ff6b6b' }}>Connection Error</h2>
+            <div className="container connection-error-container">
+                <h2 className="connection-error-title">Connection Error</h2>
                 <p>{connectionError}</p>
                 <button
                     onClick={() => window.location.reload()}
-                    style={{ marginTop: '1rem' }}
+                    className="connection-error-retry"
                 >
                     Retry Connection
                 </button>
@@ -147,59 +147,61 @@ export default function Room() {
     const totalParticipants = roomState.participants ? roomState.participants.length : 0;
 
     return (
-        <div className="container">
+        <>
             <RoomHeader
                 roomId={roomState.roomId}
+                roomName={roomState.roomName}
                 estimationMode={roomState.estimationMode}
                 phase={roomState.phase}
                 userName={name}
                 voteCount={voteCount}
                 totalParticipants={totalParticipants}
             />
+            <div className="container">
+                <div className="room-layout-grid">
+                    <main className="room-main-content">
+                        <Stage
+                            phase={roomState.phase}
+                            mode={roomState.estimationMode}
+                            availableEstimates={roomState.availableEstimates}
+                            results={roomState.results}
+                            currentEstimates={roomState.currentEstimates}
+                            participants={roomState.participants}
+                            isSpectator={isSpectator}
+                            onSubmitEstimate={handleSubmitEstimate}
+                        />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', marginTop: '2rem' }}>
-                <main>
-                    <Stage
-                        phase={roomState.phase}
-                        mode={roomState.estimationMode}
-                        availableEstimates={roomState.availableEstimates}
-                        results={roomState.results}
-                        currentEstimates={roomState.currentEstimates}
-                        participants={roomState.participants}
-                        isSpectator={isSpectator}
-                        onSubmitEstimate={handleSubmitEstimate}
-                    />
+                        {isLeader && (
+                            <>
+                                <LeaderControls
+                                    onReveal={() => socket.send({ type: 'REQUEST_REVEAL', itemId: 'TODO' })}
+                                    onNextItem={() => socket.send({ type: 'REQUEST_NEXT_VOTE' })}
+                                />
+                                <DeckSelector
+                                    currentDeck={roomState.availableEstimates}
+                                    onUpdateDeck={(availableEstimates) =>
+                                        socket.send({ type: 'UPDATE_ROOM_SETTINGS', availableEstimates })
+                                    }
+                                />
+                            </>
+                        )}
+                    </main>
 
-                    {isLeader && (
-                        <>
-                            <LeaderControls
-                                onReveal={() => socket.send({ type: 'REQUEST_REVEAL', itemId: 'TODO' })}
-                                onNextItem={() => socket.send({ type: 'REQUEST_NEXT_VOTE' })}
-                            />
-                            <DeckSelector
-                                currentDeck={roomState.availableEstimates}
-                                onUpdateDeck={(availableEstimates) =>
-                                    socket.send({ type: 'UPDATE_ROOM_SETTINGS', availableEstimates })
-                                }
-                            />
-                        </>
-                    )}
-                </main>
-
-                <aside>
-                    <ParticipantList
-                        participants={roomState.participants}
-                        currentUserName={name}
-                        leaderId={roomState.leaderId}
-                        currentEstimates={roomState.currentEstimates}
-                    />
-                    <YourVote
-                        result={myResult}
-                        estimate={myEstimate}
-                        phase={roomState.phase}
-                    />
-                </aside>
+                    <aside>
+                        <ParticipantList
+                            participants={roomState.participants}
+                            currentUserName={name}
+                            leaderId={roomState.leaderId}
+                            currentEstimates={roomState.currentEstimates}
+                        />
+                        <YourVote
+                            result={myResult}
+                            estimate={myEstimate}
+                            phase={roomState.phase}
+                        />
+                    </aside>
+                </div>
             </div>
-        </div>
+        </>
     );
 }

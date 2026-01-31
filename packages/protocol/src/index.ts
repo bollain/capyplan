@@ -25,6 +25,7 @@ export interface Participant {
 
 export interface RoomState {
     roomId: string;
+    roomName?: string;
     leaderId: string;
     participants: Participant[];
     phase: RoomPhase;
@@ -39,6 +40,7 @@ export interface RoomState {
 export const JoinRoomSchema = z.object({
     type: z.literal('JOIN_ROOM'),
     roomId: z.string(),
+    roomName: z.string().optional(),
     name: z.string(),
     clientId: z.string(),
     isSpectator: z.boolean(),
@@ -93,6 +95,7 @@ export const RoomSnapshotSchema = z.object({
     type: z.literal('ROOM_SNAPSHOT'),
     state: z.object({
         roomId: z.string(),
+        roomName: z.string().optional(),
         leaderId: z.string(),
         participants: z.array(z.object({
             id: z.string(),

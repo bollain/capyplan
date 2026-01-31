@@ -72,13 +72,14 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
 
     switch (message.type) {
         case 'JOIN_ROOM': {
-            const { roomId, name, clientId, isSpectator } = message;
+            const { roomId, roomName, name, clientId, isSpectator } = message;
 
             let room = rooms.get(roomId);
             if (!room) {
                 // Create new room
                 room = {
                     roomId,
+                    roomName: roomName, // Store optional roomName
                     leaderId: clientId, // Use clientId as leaderId
                     participants: [],
                     phase: RoomPhase.VOTING,
