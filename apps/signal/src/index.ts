@@ -7,7 +7,7 @@ import {
     RoomPhase,
     ClientMessage
 } from '@capyplan/protocol';
-import { calculateEstimate } from './logic';
+import { calculateEstimate } from './logic.js';
 
 const wss = new WebSocketServer({ port: 3001 });
 
