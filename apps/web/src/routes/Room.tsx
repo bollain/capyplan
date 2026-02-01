@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { socket } from '../lib/socket.ts';
+import { socket } from '../lib/socket';
 import { RoomState, ServerMessage, RoomPhase } from '@capyplan/protocol';
 import RoomHeader from '../components/RoomHeader';
 import Stage from '../components/Stage';
@@ -10,6 +10,20 @@ import DeckSelector from '../components/DeckSelector';
 import YourVote from '../components/YourVote';
 import JoinRoom from '../components/JoinRoom';
 import Toast from '../components/Toast';
+
+function getOrCreateClientId(): string {
+    let clientId = localStorage.getItem('capyplan_client_id');
+    if (!clientId) {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            clientId = crypto.randomUUID();
+        } else {
+            // Fallback for environments without crypto.randomUUID
+            clientId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+        }
+        localStorage.setItem('capyplan_client_id', clientId);
+    }
+    return clientId;
+}
 
 export default function Room() {
     const { roomId } = useParams<{ roomId: string }>();
@@ -51,17 +65,7 @@ export default function Room() {
         let mounted = true;
         setConnectionError(null);
 
-        // Get or create stable client ID
-        let clientId = localStorage.getItem('capyplan_client_id');
-        if (!clientId) {
-            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-                clientId = crypto.randomUUID();
-            } else {
-                // Fallback for environments without crypto.randomUUID
-                clientId = Math.random().toString(36).substring(2) + Date.now().toString(36);
-            }
-            localStorage.setItem('capyplan_client_id', clientId);
-        }
+        const clientId = getOrCreateClientId();
 
         console.log('Using Client ID:', clientId);
 
@@ -75,7 +79,7 @@ export default function Room() {
                         roomId,
                         roomName: location.state?.roomName, // Pass roomName if available
                         name,
-                        clientId: clientId!,
+                        clientId,
                         isSpectator
                     });
                 }

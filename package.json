@@ -5,9 +5,13 @@
     "dev": "pnpm -r --parallel run dev",
     "dev:web": "pnpm --filter web dev",
     "dev:signal": "pnpm --filter signal dev",
-    "build": "pnpm -r run build"
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "typescript": "^5.3.0"
+    "husky": "^9.1.7",
+    "typescript": "^5.3.0",
+    "vitest": "^4.0.18"
   }
 }
