@@ -1145,6 +1145,11 @@ input {
     display: none;
   }
 
+  .room-footer {
+    display: none;
+    /* Hide on mobile if space is tight, or keep small */
+  }
+
   .header-actions {
     width: 100%;
     justify-content: space-between;
@@ -1293,4 +1298,31 @@ input {
 .share-btn:hover {
   background-color: var(--color-primary);
   color: #000;
+}
+
+/* Room Footer */
+.room-footer {
+  text-align: center;
+  padding: 2rem 0;
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: auto;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.room-footer:hover {
+  opacity: 1;
+}
+
+.room-footer a {
+  color: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+
+.room-footer a:hover {
+  color: var(--color-primary);
+  border-bottom-style: solid;
 }

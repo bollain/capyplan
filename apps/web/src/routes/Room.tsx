@@ -227,6 +227,9 @@ export default function Room() {
                     </aside>
                 </div>
             </div>
+            <footer className="room-footer">
+                Created in Vancouver, Canada 🇨🇦 by <a href="https://github.com/bollain" target="_blank" rel="noopener noreferrer">@bollain</a>
+            </footer>
         </>
     );
 }
