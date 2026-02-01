@@ -1,8 +1,6 @@
 import { RoomPhase, EstimationMode } from '@capyplan/protocol';
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../assets/capyplan.png';
-import Toast from './Toast';
 import SessionStatus from './SessionStatus';
 
 interface Props {
@@ -13,23 +11,12 @@ interface Props {
     userName?: string;
     voteCount: number;
     totalParticipants: number;
+    onInvite: () => void;
 }
 
-export default function RoomHeader({ roomId, roomName, estimationMode, phase, userName, voteCount, totalParticipants }: Props) {
-    const [showToast, setShowToast] = useState(false);
-
-    const handleShare = () => {
-        navigator.clipboard.writeText(window.location.href);
-        setShowToast(true);
-    };
-
+export default function RoomHeader({ roomId, roomName, estimationMode, phase, userName, voteCount, totalParticipants, onInvite }: Props) {
     return (
         <header className="room-header">
-            <Toast
-                message="Link copied to clipboard! 📋"
-                isVisible={showToast}
-                onClose={() => setShowToast(false)}
-            />
 
             <div className="header-brand">
                 <Link to="/" className="brand-link">
@@ -76,7 +63,7 @@ export default function RoomHeader({ roomId, roomName, estimationMode, phase, us
                 />
 
                 <button
-                    onClick={handleShare}
+                    onClick={onInvite}
                     className="share-btn-soft"
                     title="Copy Link"
                 >

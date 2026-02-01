@@ -9,6 +9,7 @@ import RoomActions from '../components/RoomActions';
 import DeckSelector from '../components/DeckSelector';
 import YourVote from '../components/YourVote';
 import JoinRoom from '../components/JoinRoom';
+import Toast from '../components/Toast';
 
 export default function Room() {
     const { roomId } = useParams<{ roomId: string }>();
@@ -25,6 +26,9 @@ export default function Room() {
     roomStateRef.current = roomState;
 
     const [connectionError, setConnectionError] = useState<string | null>(null);
+
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState<string>('');
 
     const handleSubmitEstimate = useCallback((payload: any) => {
         const state = roomStateRef.current;
@@ -89,6 +93,11 @@ export default function Room() {
                 console.log('Received room snapshot', data.state);
                 console.log({ data });
                 setRoomState(data.state);
+            } else if (data.type === 'ROOM_EVENT') {
+                if (data.event === 'REVEALED') {
+                    setToastMessage(`${data.payload.userName} revealed the estimates!`);
+                    setShowToast(true);
+                }
             } else if (data.type === 'ERROR') {
                 alert(`Error: ${data.message}`);
             }
@@ -146,8 +155,19 @@ export default function Room() {
     const voteCount = roomState.currentEstimates ? Object.keys(roomState.currentEstimates).length : 0;
     const totalParticipants = roomState.participants ? roomState.participants.length : 0;
 
+    const handleShare = () => {
+        navigator.clipboard.writeText(window.location.href);
+        setToastMessage('Link copied to clipboard! 📋');
+        setShowToast(true);
+    };
+
     return (
         <>
+            <Toast
+                message={toastMessage}
+                isVisible={showToast}
+                onClose={() => setShowToast(false)}
+            />
             <RoomHeader
                 roomId={roomState.roomId}
                 roomName={roomState.roomName}
@@ -156,6 +176,7 @@ export default function Room() {
                 userName={name}
                 voteCount={voteCount}
                 totalParticipants={totalParticipants}
+                onInvite={handleShare}
             />
             <div className="container">
                 <div className="room-layout-grid">

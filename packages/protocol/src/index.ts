@@ -116,9 +116,18 @@ export const ErrorMessageSchema = z.object({
     message: z.string(),
 });
 
+export const RoomEventSchema = z.object({
+    type: z.literal('ROOM_EVENT'),
+    event: z.literal('REVEALED'),
+    payload: z.object({
+        userName: z.string(),
+    }),
+});
+
 export const ServerMessageSchema = z.discriminatedUnion('type', [
     RoomSnapshotSchema,
     ErrorMessageSchema,
+    RoomEventSchema,
 ]);
 
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;

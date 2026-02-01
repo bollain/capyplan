@@ -185,6 +185,12 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             }
 
             broadcastSnapshot(socketState.roomId);
+
+            // Broadcast Who Revealed Event
+            const revealer = room.participants.find(p => p.id === socketState.userId);
+            if (revealer) {
+                broadcastEvent(socketState.roomId, 'REVEALED', { userName: revealer.name });
+            }
             break;
         }
 
@@ -347,4 +353,19 @@ function broadcastSnapshot(roomId: string) {
 function sendError(ws: WebSocket, code: string, message: string) {
     const msg: ServerMessage = { type: 'ERROR', code, message };
     ws.send(JSON.stringify(msg));
+}
+
+function broadcastEvent(roomId: string, event: 'REVEALED', payload: any) {
+    const msg: ServerMessage = {
+        type: 'ROOM_EVENT',
+        event,
+        payload
+    };
+    const data = JSON.stringify(msg);
+
+    for (const [ws, state] of socketMap.entries()) {
+        if (state.roomId === roomId && ws.readyState === WebSocket.OPEN) {
+            ws.send(data);
+        }
+    }
 }
