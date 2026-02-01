@@ -14,7 +14,7 @@ export default function ParticipantList({ participants, currentUserName, leaderI
             <ul className="participant-list">
                 {participants.map(p => {
                     const isMe = p.name === currentUserName;
-                    const hasEstimated = currentEstimates?.[p.id];
+                    const hasEstimated = currentEstimates?.[p.id] !== undefined;
 
                     let itemClass = 'participant-item';
                     if (isMe) itemClass += ' is-me';

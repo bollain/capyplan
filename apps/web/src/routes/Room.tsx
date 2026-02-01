@@ -37,14 +37,17 @@ export default function Room() {
     const [roomState, setRoomState] = useState<RoomState | null>(null);
     // Use ref to keep latest roomState accessible in stable callbacks
     const roomStateRef = useRef<RoomState | null>(null);
-    roomStateRef.current = roomState;
+
+    useEffect(() => {
+        roomStateRef.current = roomState;
+    }, [roomState]);
 
     const [connectionError, setConnectionError] = useState<string | null>(null);
 
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState<string>('');
 
-    const handleSubmitEstimate = useCallback((payload: any) => {
+    const handleSubmitEstimate = useCallback((payload: Record<string, unknown>) => {
         const state = roomStateRef.current;
         console.log({ state });
         if (!state) return;
@@ -63,7 +66,7 @@ export default function Room() {
         }
 
         let mounted = true;
-        setConnectionError(null);
+        if (connectionError) setConnectionError(null);
 
         const clientId = getOrCreateClientId();
 
@@ -91,7 +94,8 @@ export default function Room() {
                 }
             });
 
-        const cleanup = socket.subscribe((data: ServerMessage) => {
+        const cleanup = socket.subscribe((raw: unknown) => {
+            const data = raw as ServerMessage;
             if (!mounted) return;
             if (data.type === 'ROOM_SNAPSHOT') {
                 console.log('Received room snapshot', data.state);
@@ -112,7 +116,9 @@ export default function Room() {
             cleanup();
             socket.send({ type: 'LEAVE_ROOM' });
         };
-    }, [roomId, name, isJoined, navigate]); // Re-run if joined status changes
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [roomId, name, isJoined, navigate, location.state?.roomName, isSpectator]); // Re-run if joined status changes
 
     if (connectionError) {
         return (
@@ -153,8 +159,8 @@ export default function Room() {
     const isLeader = roomState.leaderId === myClientId;
 
     // Safety check for myClientId
-    const myResult = (myClientId && roomState.results) ? roomState.results[myClientId] : null;
-    const myEstimate = (myClientId && roomState.currentEstimates) ? roomState.currentEstimates[myClientId] : null;
+    const myResult = (myClientId && roomState.results) ? (roomState.results[myClientId] as { score: number; stdDev?: number }) : null;
+    const myEstimate = (myClientId && roomState.currentEstimates) ? (roomState.currentEstimates[myClientId] as { optimistic: number; mostLikely: number; pessimistic: number }) : null;
 
     const voteCount = roomState.currentEstimates ? Object.keys(roomState.currentEstimates).length : 0;
     const totalParticipants = roomState.participants ? roomState.participants.length : 0;

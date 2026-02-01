@@ -10,7 +10,7 @@ interface Props {
     currentEstimates?: RoomState['currentEstimates'];
     participants: RoomState['participants'];
     isSpectator: boolean;
-    onSubmitEstimate: (payload: any) => void;
+    onSubmitEstimate: (payload: Record<string, unknown>) => void;
 }
 
 export default function Stage({ phase, mode, availableEstimates, results, currentEstimates, participants, isSpectator, onSubmitEstimate }: Props) {

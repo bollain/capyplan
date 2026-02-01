@@ -13,7 +13,7 @@ export interface RiskAnalysis {
 
 export function calculateTeamStats(results: Record<string, { score: number }>): PertAnalysis {
     const scores = Object.values(results)
-        .map((r: any) => r.score)
+        .map((r) => r.score)
         .filter(n => typeof n === 'number');
 
     const avg = scores.length > 0

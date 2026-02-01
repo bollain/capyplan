@@ -30,7 +30,7 @@ export function calculatePert(payload: EstimatePayload): EstimationResult {
 /**
  * Strategy pattern for future modes (e.g., Fibonacci, Planning Poker)
  */
-export function calculateEstimate(mode: EstimationMode, payload: any): EstimationResult {
+export function calculateEstimate(mode: EstimationMode, payload: unknown): EstimationResult {
     switch (mode) {
         case EstimationMode.PERT:
             return calculatePert(payload as EstimatePayload);

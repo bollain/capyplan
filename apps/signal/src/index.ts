@@ -7,7 +7,7 @@ import {
     RoomPhase,
     ClientMessage
 } from '@capyplan/protocol';
-import { calculateEstimate } from './logic.js';
+import { calculateEstimate, EstimationResult } from './logic.js';
 
 const wss = new WebSocketServer({ port: 3001 });
 
@@ -56,7 +56,7 @@ wss.on('connection', (ws) => {
             }
 
             handleMessage(ws, parseResult.data);
-        } catch (e) {
+        } catch {
             sendError(ws, 'PARSE_ERROR', 'Could not parse message JSON');
         }
     });
@@ -173,7 +173,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
 
             // Calculate results
             if (room.currentEstimates) {
-                const results: Record<string, any> = {};
+                const results: Record<string, EstimationResult> = {};
                 for (const [userId, payload] of Object.entries(room.currentEstimates)) {
                     try {
                         results[userId] = calculateEstimate(room.estimationMode, payload);
@@ -194,7 +194,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             break;
         }
 
-        case 'REQUEST_NEXT_VOTE':
+        case 'REQUEST_NEXT_VOTE': {
             if (!socketState.roomId) return;
             const room = rooms.get(socketState.roomId);
             if (!room) return;
@@ -205,6 +205,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             room.results = undefined;
             broadcastSnapshot(socketState.roomId);
             break;
+        }
 
         case 'UPDATE_ROOM_SETTINGS': {
             if (!socketState.roomId) return;
@@ -355,7 +356,7 @@ function sendError(ws: WebSocket, code: string, message: string) {
     ws.send(JSON.stringify(msg));
 }
 
-function broadcastEvent(roomId: string, event: 'REVEALED', payload: any) {
+function broadcastEvent(roomId: string, event: 'REVEALED', payload: { userName: string }) {
     const msg: ServerMessage = {
         type: 'ROOM_EVENT',
         event,

@@ -9,7 +9,8 @@ interface Props {
 }
 
 export default function PertResults({ results, currentEstimates, participants }: Props) {
-    const { avgScore, teamStdDev, disagreementLevel, disagreementColor } = calculateTeamStats(results);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { avgScore, teamStdDev, disagreementLevel, disagreementColor } = calculateTeamStats(results as any);
     const [showGuide, setShowGuide] = useState(false);
 
     return (
@@ -24,7 +25,7 @@ export default function PertResults({ results, currentEstimates, participants }:
                 </thead>
                 <tbody>
                     {participants.map(p => {
-                        const result = results[p.id];
+                        const result = results[p.id] as { score: number; stdDev: number } | undefined;
                         const estimate = currentEstimates?.[p.id];
                         if (!result) return null;
 

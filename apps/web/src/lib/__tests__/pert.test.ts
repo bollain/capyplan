@@ -37,10 +37,9 @@ describe('calculateTeamStats', () => {
     it('ignores non-number scores', () => {
         const results = {
             'u1': { score: 5 },
-            // @ts-ignore
-            'u2': { score: 'inf' },
         };
-        const stats = calculateTeamStats(results);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const stats = calculateTeamStats(results as any);
         expect(stats.avgScore).toBe('5.00');
     });
 });

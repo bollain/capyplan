@@ -4,7 +4,7 @@
 export class SocketClient {
     private static instance: SocketClient;
     private ws: WebSocket | null = null;
-    private listeners: Set<(msg: any) => void> = new Set();
+    private listeners: Set<(msg: unknown) => void> = new Set();
 
     // Quick hack to restore connection/state if the user navigates
     // In a real app, use Context to hold the socket instance.
@@ -90,7 +90,7 @@ export class SocketClient {
         });
     }
 
-    send(msg: any) {
+    send(msg: object) {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify(msg));
         } else {
@@ -98,9 +98,9 @@ export class SocketClient {
         }
     }
 
-    subscribe(cb: (msg: any) => void) {
+    subscribe(cb: (msg: unknown) => void) {
         this.listeners.add(cb);
-        return () => this.listeners.delete(cb);
+        return () => { this.listeners.delete(cb); };
     }
 }
 

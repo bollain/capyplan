@@ -5,10 +5,10 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { socket } from '../../lib/socket';
 
 // Mock socket using spyOn to ensure we touch the singleton instance
-let socketListeners: ((data: any) => void)[] = [];
+let socketListeners: ((data: unknown) => void)[] = [];
 
 // Helper to simulate server messages
-const emitToSocket = (data: any) => {
+const emitToSocket = (data: unknown) => {
     socketListeners.forEach(l => l(data));
 };
 
@@ -20,7 +20,7 @@ Object.defineProperty(navigator, 'clipboard', {
 });
 
 // Mock crypto.randomUUID
-Object.defineProperty(global, 'crypto', {
+Object.defineProperty(globalThis, 'crypto', {
     value: {
         randomUUID: () => 'mock-client-id-123',
     },

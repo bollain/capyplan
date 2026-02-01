@@ -16,7 +16,7 @@ describe('SessionStatus', () => {
     });
 
     it('displays custom phase correctly', () => {
-        // @ts-ignore - testing unknown phase fallback
+        // @ts-expect-error Testing invalid props - testing unknown phase fallback
         render(<SessionStatus phase="UNKNOWN_PHASE" voteCount={0} totalParticipants={0} />);
         expect(screen.getByText('UNKNOWN_PHASE')).toBeInTheDocument();
     });

@@ -30,8 +30,8 @@ export interface RoomState {
     participants: Participant[];
     phase: RoomPhase;
     estimationMode: EstimationMode;
-    currentEstimates?: Record<string, any>;
-    results?: Record<string, any>;
+    currentEstimates?: Record<string, unknown>;
+    results?: Record<string, unknown>;
     availableEstimates?: number[];
 }
 
@@ -105,8 +105,8 @@ export const RoomSnapshotSchema = z.object({
         phase: z.nativeEnum(RoomPhase),
         estimationMode: z.nativeEnum(EstimationMode),
         availableEstimates: z.array(z.number()).optional(),
-        currentEstimates: z.record(z.any()).optional(),
-        results: z.record(z.any()).optional(),
+        currentEstimates: z.record(z.unknown()).optional(),
+        results: z.record(z.unknown()).optional(),
     }),
 });
 

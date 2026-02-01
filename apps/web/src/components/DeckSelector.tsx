@@ -1,18 +1,11 @@
 import { useState } from 'react';
+import { PRESETS, DEFAULT_DECK } from '../constants/decks';
 
 interface Props {
     currentDeck: number[] | undefined;
     onUpdateDeck: (estimates: number[]) => void;
 }
 
-export const PRESETS = {
-    'Vanilla': [1, 2, 3, 4, 5, 8],
-    'Fibonacci': [0, 1, 2, 3, 5, 8],
-    'Standard': [0, 0.5, 1, 2, 3, 5, 8],
-    'T-Shirt (mapped)': [1, 2, 3, 5, 8], // XS, S, M, L, XL
-};
-
-export const DEFAULT_DECK = PRESETS['Vanilla'];
 
 export default function DeckSelector({ currentDeck, onUpdateDeck }: Props) {
     const [customInput, setCustomInput] = useState('');
@@ -23,7 +16,7 @@ export default function DeckSelector({ currentDeck, onUpdateDeck }: Props) {
 
     // Find if current deck matches a preset
     const currentPresetName = Object.entries(PRESETS).find(
-        ([_, values]) => JSON.stringify(values) === JSON.stringify(effectiveDeck)
+        ([, values]) => JSON.stringify(values) === JSON.stringify(effectiveDeck)
     )?.[0];
 
     const currentDeckDisplay = currentPresetName || 'Custom';

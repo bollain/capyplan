@@ -1,11 +1,11 @@
 import { EstimationMode } from '@capyplan/protocol';
 import PertVoting from './PertVoting';
-import { DEFAULT_DECK } from './DeckSelector';
+import { DEFAULT_DECK } from '../constants/decks';
 
 interface Props {
     mode: EstimationMode;
     availableEstimates?: number[];
-    onSubmit: (payload: any) => void;
+    onSubmit: (payload: Record<string, unknown>) => void;
 }
 
 export default function VotingArea({ mode, availableEstimates, onSubmit }: Props) {

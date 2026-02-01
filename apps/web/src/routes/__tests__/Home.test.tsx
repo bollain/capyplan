@@ -21,7 +21,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 // Mock crypto.randomUUID
-Object.defineProperty(global, 'crypto', {
+Object.defineProperty(globalThis, 'crypto', {
     value: {
         randomUUID: () => 'mock-uuid-1234',
     },
