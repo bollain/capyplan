@@ -10,10 +10,10 @@ interface Props {
 
 export default function RoomActions({ onReveal, onNextItem, phase, voteCount, totalParticipants }: Props) {
     const allVoted = totalParticipants > 0 && voteCount >= totalParticipants;
-    const isWaiting = phase === RoomPhase.VOTING && !allVoted;
 
-    // Use compact class for waiting, standard (reduced padding) for others
-    const cardClass = isWaiting ? 'action-card-compact' : 'action-card-standard';
+    // Always use compact layout for voting phase to prevent jumps
+    const isVoting = phase === RoomPhase.VOTING;
+    const cardClass = isVoting ? 'action-card-compact' : 'action-card-standard';
 
     return (
         <div className={`card room-actions-card ${cardClass}`}>
@@ -21,11 +21,11 @@ export default function RoomActions({ onReveal, onNextItem, phase, voteCount, to
                 {phase === RoomPhase.VOTING && (
                     <button
                         onClick={onReveal}
-                        disabled={!allVoted}
-                        className={allVoted ? 'btn-prominent' : 'btn-waiting'}
-                        title={!allVoted ? `Waiting for votes... (${voteCount}/${totalParticipants})` : 'Reveal all estimates'}
+                        disabled={voteCount === 0}
+                        className={allVoted ? 'btn-prominent-std' : (voteCount > 0 ? '' : 'btn-waiting')}
+                        title={voteCount === 0 ? `Waiting for votes... (${voteCount}/${totalParticipants})` : (allVoted ? 'Reveal all estimates' : 'Reveal current estimates')}
                     >
-                        {allVoted ? '⚡ Reveal Estimates' : `Waiting for Votes (${voteCount}/${totalParticipants})`}
+                        {allVoted ? '⚡ Reveal All Estimates' : (voteCount > 0 ? `Reveal Estimates (${voteCount}/${totalParticipants})` : `Waiting for Votes...`)}
                     </button>
                 )}
 

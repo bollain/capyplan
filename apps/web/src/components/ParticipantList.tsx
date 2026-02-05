@@ -28,7 +28,14 @@ export default function ParticipantList({ participants, currentUserName, leaderI
                                 {p.isSpectator && <span title="Spectator">👀</span>}
                                 {p.connected === false && <span title="Disconnected" style={{ fontSize: '0.8rem' }}>🔌</span>}
                             </div>
-                            {hasEstimated && <span>✅</span>}
+                            {/* Status Icons */}
+                            <div className="status-icon">
+                                {hasEstimated ? (
+                                    <span title="Voted">✅</span>
+                                ) : (
+                                    !p.isSpectator && <span title="Thinking...">🤔</span>
+                                )}
+                            </div>
                         </li>
                     );
                 })}

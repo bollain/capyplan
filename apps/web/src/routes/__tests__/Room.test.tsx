@@ -199,13 +199,48 @@ describe('Room Page', () => {
             });
         });
 
-        // Alice has voted. Bob hasn't. But Bob is a spectator.
-        // Should show "Reveal Estimates" button enabled
-        // Should show "Reveal Estimates" button enabled
-        const button = screen.getByRole('button', { name: /Reveal Estimates/i });
+        // Alice has voted. Bob is spectator.
+        // totalParticipants should only count NON-spectators.
+        // So totalParticipants = 1 (Alice). voteCount = 1 (Alice).
+        // allVoted = true.
+
+        const button = screen.getByRole('button', { name: /Reveal All Estimates/i });
         expect(button).toBeInTheDocument();
         expect(button).toBeEnabled();
-        expect(screen.getByText('⚡ Reveal Estimates')).toBeInTheDocument();
+        expect(screen.getByText('⚡ Reveal All Estimates')).toBeInTheDocument();
+    });
+
+    it('allows reveal when at least one person has voted (partial)', async () => {
+        renderRoom();
+
+        await act(async () => {
+            emitToSocket({
+                type: 'ROOM_SNAPSHOT',
+                state: {
+                    roomId: 'room-partial',
+                    roomName: 'Partial Test',
+                    phase: 'VOTING',
+                    estimationMode: 'PERT',
+                    leaderId: 'mock-client-id-123',
+                    participants: [
+                        { id: 'mock-client-id-123', name: 'Alice', connected: true },
+                        { id: 'bob-id', name: 'Bob', connected: true }
+                    ],
+                    results: {},
+                    currentEstimates: {
+                        'mock-client-id-123': { optimistic: 1, mostLikely: 2, pessimistic: 3 }
+                    },
+                    availableEstimates: [1, 2, 3]
+                }
+            });
+        });
+
+        // Alice voted, Bob didn't. 
+        // Button should be ENABLED but NOT "All Estimates"
+        const button = screen.getByRole('button', { name: /Reveal Estimates/i });
+        expect(button).toBeEnabled();
+        expect(screen.getByText('Reveal Estimates (1/2)')).toBeInTheDocument();
+        expect(screen.queryByText('⚡ Reveal All Estimates')).not.toBeInTheDocument();
     });
 
     it('sends retraction when vote is toggled off', async () => {
