@@ -212,6 +212,7 @@ export default function Room() {
                             phase={roomState.phase}
                             voteCount={voteCount}
                             totalParticipants={totalParticipants}
+                            results={roomState.results}
                         />
 
                         {isLeader && (

@@ -126,6 +126,96 @@ input {
   margin-bottom: 1rem;
 }
 
+/* Interlude Pill */
+.interlude-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.interlude-pill {
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  /* box-shadow: 0 8px 30px rgba(0,0,0,0.5); */
+  /* Removed shadow for inline context */
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  animation: pill-enter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.interlude-pill.exiting {
+  animation: pill-exit 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.interlude-text {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.interlude-loader {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.interlude-loader::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 30%;
+  background: var(--color-primary);
+  border-radius: 2px;
+  animation: loader-slide 1s ease-in-out infinite alternate;
+}
+
+@keyframes pill-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pill-exit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes loader-slide {
+  from {
+    left: 0%;
+    width: 20%;
+  }
+
+  to {
+    left: 80%;
+    width: 20%;
+  }
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
