@@ -163,7 +163,7 @@ export default function Room() {
     const myEstimate = (myClientId && roomState.currentEstimates) ? (roomState.currentEstimates[myClientId] as { optimistic: number; mostLikely: number; pessimistic: number }) : null;
 
     const voteCount = roomState.currentEstimates ? Object.keys(roomState.currentEstimates).length : 0;
-    const totalParticipants = roomState.participants ? roomState.participants.length : 0;
+    const totalParticipants = roomState.participants ? roomState.participants.filter(p => !p.isSpectator).length : 0;
 
     const handleShare = () => {
         navigator.clipboard.writeText(window.location.href);

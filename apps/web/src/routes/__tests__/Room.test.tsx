@@ -174,4 +174,37 @@ describe('Room Page', () => {
             }
         }));
     });
+    it('allows reveal when all active participants have voted (ignoring spectators)', async () => {
+        renderRoom();
+
+        await act(async () => {
+            emitToSocket({
+                type: 'ROOM_SNAPSHOT',
+                state: {
+                    roomId: 'room-123',
+                    roomName: 'Spectator Test',
+                    phase: 'VOTING',
+                    estimationMode: 'PERT',
+                    leaderId: 'mock-client-id-123', // Alice is leader (current user)
+                    participants: [
+                        { id: 'mock-client-id-123', name: 'Alice', connected: true, isSpectator: false },
+                        { id: 'bob-id', name: 'Bob', connected: true, isSpectator: true } // Spectator!
+                    ],
+                    results: {},
+                    currentEstimates: {
+                        'mock-client-id-123': { optimistic: 1, mostLikely: 2, pessimistic: 3 }
+                    },
+                    availableEstimates: [1, 2, 3]
+                }
+            });
+        });
+
+        // Alice has voted. Bob hasn't. But Bob is a spectator.
+        // Should show "Reveal Estimates" button enabled
+        // Should show "Reveal Estimates" button enabled
+        const button = screen.getByRole('button', { name: /Reveal Estimates/i });
+        expect(button).toBeInTheDocument();
+        expect(button).toBeEnabled();
+        expect(screen.getByText('⚡ Reveal Estimates')).toBeInTheDocument();
+    });
 });
