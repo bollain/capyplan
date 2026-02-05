@@ -49,7 +49,6 @@ export default function Room() {
 
     const handleSubmitEstimate = useCallback((payload: Record<string, unknown>) => {
         const state = roomStateRef.current;
-        console.log({ state });
         if (!state) return;
         socket.send({
             type: 'SUBMIT_ESTIMATE',
@@ -57,7 +56,11 @@ export default function Room() {
             estimationMode: state.estimationMode,
             payload
         });
-    }, []); // Stable reference, never changes
+    }, []); // Stable reference
+
+    const handleRetractEstimate = useCallback(() => {
+        socket.send({ type: 'RETRACT_VOTE' });
+    }, []);
 
     // Connect and Join
     useEffect(() => {
@@ -200,6 +203,7 @@ export default function Room() {
                             participants={roomState.participants}
                             isSpectator={isSpectator}
                             onSubmitEstimate={handleSubmitEstimate}
+                            onRetractEstimate={handleRetractEstimate}
                         />
 
                         <RoomActions

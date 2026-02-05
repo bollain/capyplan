@@ -6,9 +6,10 @@ interface Props {
     mode: EstimationMode;
     availableEstimates?: number[];
     onSubmit: (payload: Record<string, unknown>) => void;
+    onRetract: () => void;
 }
 
-export default function VotingArea({ mode, availableEstimates, onSubmit }: Props) {
+export default function VotingArea({ mode, availableEstimates, onSubmit, onRetract }: Props) {
     const estimates = availableEstimates || DEFAULT_DECK;
 
     // Note: If we really wanted to wait, we'd check for empty array specifically, but default handles it.
@@ -21,6 +22,7 @@ export default function VotingArea({ mode, availableEstimates, onSubmit }: Props
             <PertVoting
                 availableEstimates={estimates}
                 onSubmit={onSubmit}
+                onRetract={onRetract}
             />
         );
     }

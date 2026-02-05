@@ -78,6 +78,10 @@ export const UpdateRoomSettingsSchema = z.object({
     availableEstimates: z.array(z.number()),
 });
 
+export const RetractVoteSchema = z.object({
+    type: z.literal('RETRACT_VOTE'),
+});
+
 export const ClientMessageSchema = z.discriminatedUnion('type', [
     JoinRoomSchema,
     LeaveRoomSchema,
@@ -85,6 +89,7 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     RequestRevealSchema,
     RequestNextVoteSchema,
     UpdateRoomSettingsSchema,
+    RetractVoteSchema,
 ]);
 
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;

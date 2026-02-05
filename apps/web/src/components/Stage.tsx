@@ -11,9 +11,10 @@ interface Props {
     participants: RoomState['participants'];
     isSpectator: boolean;
     onSubmitEstimate: (payload: Record<string, unknown>) => void;
+    onRetractEstimate: () => void;
 }
 
-export default function Stage({ phase, mode, availableEstimates, results, currentEstimates, participants, isSpectator, onSubmitEstimate }: Props) {
+export default function Stage({ phase, mode, availableEstimates, results, currentEstimates, participants, isSpectator, onSubmitEstimate, onRetractEstimate }: Props) {
     return (
         <div className="card">
             {phase === RoomPhase.REVEALED && results ? (
@@ -29,6 +30,7 @@ export default function Stage({ phase, mode, availableEstimates, results, curren
                                 mode={mode}
                                 availableEstimates={availableEstimates}
                                 onSubmit={onSubmitEstimate}
+                                onRetract={onRetractEstimate}
                             />
                         </>
                     )}

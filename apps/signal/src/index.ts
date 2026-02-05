@@ -155,6 +155,22 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             break;
         }
 
+        case 'RETRACT_VOTE': {
+            if (!socketState.roomId) return;
+            const room = rooms.get(socketState.roomId);
+            if (!room) return;
+
+            const participant = room.participants.find(p => p.id === socketState.userId);
+            if (!participant) return;
+
+            if (room.currentEstimates && room.currentEstimates[participant.id]) {
+                delete room.currentEstimates[participant.id];
+                console.log(`Retracted estimate for ${participant.name}`);
+                broadcastSnapshot(socketState.roomId);
+            }
+            break;
+        }
+
         case 'REQUEST_REVEAL': {
             if (!socketState.roomId) return;
             const room = rooms.get(socketState.roomId);

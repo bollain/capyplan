@@ -207,4 +207,39 @@ describe('Room Page', () => {
         expect(button).toBeEnabled();
         expect(screen.getByText('⚡ Reveal Estimates')).toBeInTheDocument();
     });
+
+    it('sends retraction when vote is toggled off', async () => {
+        renderRoom();
+
+        // Simulate PERT vote being selected
+        await act(async () => {
+            emitToSocket({
+                type: 'ROOM_SNAPSHOT',
+                state: {
+                    roomId: 'room-123',
+                    roomName: 'Retract Test',
+                    phase: 'VOTING',
+                    estimationMode: 'PERT',
+                    leaderId: 'mock-client-id-123',
+                    participants: [{ id: 'mock-client-id-123', name: 'Alice', connected: true }],
+                    results: {},
+                    currentEstimates: {},
+                    availableEstimates: [1, 2, 3]
+                }
+            });
+        });
+
+        // 1. Select a vote first
+        const optimisticRow = screen.getByText('Optimistic').closest('.pert-row') as HTMLElement;
+        const button = within(optimisticRow).getByText('2');
+        fireEvent.click(button);
+
+        // 2. Click it again to deselect (retract)
+        fireEvent.click(button);
+
+        // 3. Verify RETRACT_VOTE is sent
+        expect(socket.send).toHaveBeenCalledWith(expect.objectContaining({
+            type: 'RETRACT_VOTE'
+        }));
+    });
 });
