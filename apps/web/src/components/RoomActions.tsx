@@ -73,7 +73,7 @@ export default function RoomActions({ onReveal, onNextItem, phase, voteCount, to
                 {phase === RoomPhase.REVEALED && (
                     <>
                         {cooldown > 0 ? (
-                            <InterludePill isVisible={true} disagreementLevel={disagreementLevel} />
+                            <InterludePill disagreementLevel={disagreementLevel} />
                         ) : (
                             <button
                                 onClick={onNextItem}
@@ -85,6 +85,6 @@ export default function RoomActions({ onReveal, onNextItem, phase, voteCount, to
                     </>
                 )}
             </div>
-        </div>
+        </div >
     );
 }
