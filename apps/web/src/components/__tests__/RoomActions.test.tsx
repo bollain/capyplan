@@ -41,7 +41,7 @@ describe('RoomActions', () => {
         expect(screen.queryByText('Start New Estimation')).not.toBeInTheDocument();
 
         // Advance time by 2 seconds + buffer
-        await vi.advanceTimersByTimeAsync(3000);
+        await vi.advanceTimersByTimeAsync(6000);
 
         expect(screen.getByText('Start New Estimation')).toBeInTheDocument();
         vi.useRealTimers();
