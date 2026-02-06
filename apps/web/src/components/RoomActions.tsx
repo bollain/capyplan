@@ -14,7 +14,7 @@ interface Props {
     results?: RoomState['results'];
 }
 
-const COOLDOWN_SECONDS = 2;
+const COOLDOWN_SECONDS = 5;
 
 export default function RoomActions({ onReveal, onNextItem, phase, voteCount, totalParticipants, results }: Props) {
     const allVoted = totalParticipants > 0 && voteCount >= totalParticipants;

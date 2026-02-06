@@ -29,6 +29,10 @@ export const INTERLUDE_COPY: Record<DisagreementLevel, string[]> = {
         'Like a glove.',
         'Excellent.',
         'Nothing but net.',
+        'Ship it.',
+        'Next!',
+        'Mind meld achieved.',
+        'Let’s get this bread.',
     ],
 
     [DisagreementLevel.Medium]: [
@@ -56,6 +60,9 @@ export const INTERLUDE_COPY: Record<DisagreementLevel, string[]> = {
         'I love democracy.',
         'Interesting… interesting.',
         'What’s the deal with these numbers?',
+        'Don’t hold Capy to it but it’s probably a 3.',
+        'It might not be you but it’s some of us.',
+        'Did you remember to factor in tests?',
     ],
 
     [DisagreementLevel.High]: [
@@ -89,5 +96,8 @@ export const INTERLUDE_COPY: Record<DisagreementLevel, string[]> = {
         'Capy suspects vibes-based estimating.',
         'We live in a society.',
         'This says more about us than the estimate.',
+        'Are you sure we\'re all looking at the same ticket?',
+        'I feel like we made different assumptions here.',
+        'Capy has a bad feeling about this one.',
     ],
 };
