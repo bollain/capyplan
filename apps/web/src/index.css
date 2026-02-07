@@ -675,13 +675,8 @@ input {
 }
 
 .logo-img {
-  width: 160px;
-  /* pick what looks right */
   aspect-ratio: 549 / 311;
-  height: auto;
-  /* derived */
   display: block;
-  /* avoids inline img baseline weirdness */
   object-fit: contain;
   transform: scale(0.9);
   flex: 0 0 auto;
