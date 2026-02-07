@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../lib/socket.ts';
 import logo from '../assets/capyplan.png';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function Home() {
     const [name, setName] = useState('');
@@ -41,11 +42,14 @@ export default function Home() {
 
     return (
         <div className="container home-container">
+            <div style={{ position: 'absolute', top: '1rem', right: '1.75rem' }}>
+                <ThemeToggle />
+            </div>
             <div className="logo-header">
                 <img src={logo} alt="CapyPlan Logo" className="logo-img" />
                 <h1>CapyPlan</h1>
             </div>
-            <p className="text-center">Collaborative Estimation Tool</p>
+            <p className="text-center" style={{ marginBottom: '0.5rem', marginTop: '0.5rem' }}>Collaborative Estimation Tool</p>
 
             <div className="card join-card">
                 <form onSubmit={handleJoin} className="join-form">

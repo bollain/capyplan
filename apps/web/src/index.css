@@ -1,10 +1,70 @@
 :root {
-  --color-bg: #1a1a1a;
-  --color-text: #ffffff;
-  --color-primary: #ff9f1c;
-  /* Capybara orange-ish */
+  /* Core Colors */
+  --color-primary: #f89c1c;
+  /* Slightly desaturated from #ff9f1c */
   --color-secondary: #2ec4b6;
+
+  /* default to DARK mode values */
+  --color-bg: #1a1a1a;
   --color-surface: #2d2d2d;
+  --color-surface-hover: #333333;
+  --color-surface-active: #444444;
+
+  --color-text: #ffffff;
+  --color-text-secondary: #cccccc;
+  --color-text-muted: #888888;
+
+  --color-border: #444444;
+  --color-border-subtle: rgba(255, 255, 255, 0.1);
+
+  --color-shadow: rgba(0, 0, 0, 0.4);
+
+  --bg-input: #2d2d2d;
+  --bg-card: #2d2d2d;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  --color-btn-text: #000000;
+
+  /* Status/Risk Colors */
+  --color-risk-high-bg: rgba(244, 67, 54, 0.1);
+  --color-risk-high-border: #f44336;
+  --color-risk-high-text: #f44336;
+
+  --color-risk-medium-bg: rgba(255, 152, 0, 0.1);
+  --color-risk-medium-border: #ff9800;
+  --color-risk-medium-text: #ff9800;
+
+  --color-risk-low-bg: rgba(76, 175, 80, 0.1);
+  --color-risk-low-border: #4caf50;
+  --color-risk-low-text: #4caf50;
+
+  /* Pill & Tag Backgrounds */
+  --color-pill-bg: rgba(255, 255, 255, 0.05);
+  --color-pill-hover: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] {
+  --color-bg: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f0f0f0;
+  --color-surface-active: #e0e0e0;
+
+  --color-text: #1a1a1a;
+  --color-text-secondary: #555555;
+  --color-text-muted: #777777;
+
+  --color-border: #dddddd;
+  --color-border-subtle: rgba(0, 0, 0, 0.1);
+
+  --color-shadow: rgba(0, 0, 0, 0.1);
+
+  --bg-input: #ffffff;
+  --bg-card: #ffffff;
+  --bg-overlay: rgba(255, 255, 255, 0.8);
+
+  /* In light mode, pill backgrounds need to be darker to show up on white */
+  --color-pill-bg: rgba(0, 0, 0, 0.05);
+  --color-pill-hover: rgba(0, 0, 0, 0.1);
 }
 
 body {
@@ -12,6 +72,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--color-bg);
   color: var(--color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {
@@ -22,7 +83,7 @@ body {
 
 button {
   background-color: var(--color-primary);
-  color: #000;
+  color: var(--color-btn-text);
   border: none;
   padding: 0.5rem 1rem;
   font-size: 1rem;
@@ -39,9 +100,9 @@ button:disabled {
 input {
   padding: 0.5rem;
   border-radius: 4px;
-  border: 1px solid #444;
-  background-color: var(--color-surface);
-  color: white;
+  border: 1px solid var(--color-border);
+  background-color: var(--bg-input);
+  color: var(--color-text);
   font-size: 1rem;
 }
 
@@ -56,7 +117,7 @@ input {
 /* Button Variants */
 .btn-prominent {
   background-color: var(--color-secondary);
-  color: #000;
+  color: var(--color-btn-text);
   box-shadow: 0 4px 14px rgba(46, 196, 182, 0.4);
   transform: translateY(-1px);
   padding: 0.8rem 2rem;
@@ -66,7 +127,7 @@ input {
 
 .btn-prominent-std {
   background-color: var(--color-secondary);
-  color: #000;
+  color: var(--color-btn-text);
   /* Standard button size */
   padding: 0.5rem 1rem;
   font-size: 1rem;
@@ -98,32 +159,33 @@ input {
 }
 
 .btn-prominent:hover {
-  background-color: #3adacb;
+  filter: brightness(1.1);
   box-shadow: 0 6px 20px rgba(46, 196, 182, 0.5);
   transform: translateY(-2px);
 }
 
 .btn-waiting {
-  background-color: #333;
-  color: #fff;
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
   cursor: not-allowed;
-  border: 1px solid #444;
+  border: 1px solid var(--color-border);
 }
 
 .btn-secondary {
-  background-color: #444;
-  color: #fff;
+  background-color: var(--color-surface-active);
+  color: var(--color-text);
 }
 
 .btn-secondary:hover {
-  background-color: #555;
+  background-color: var(--color-border);
 }
 
 .card {
-  background-color: var(--color-surface);
+  background-color: var(--bg-card);
   padding: 1.5rem;
   border-radius: 8px;
   margin-bottom: 1rem;
+  transition: background-color 0.3s ease;
 }
 
 /* Interlude Pill */
@@ -139,8 +201,6 @@ input {
   border: 1px solid var(--color-primary);
   padding: 0.6rem 1.2rem;
   border-radius: 999px;
-  /* box-shadow: 0 8px 30px rgba(0,0,0,0.5); */
-  /* Removed shadow for inline context */
   display: flex;
   align-items: center;
   gap: 0.8rem;
@@ -154,14 +214,14 @@ input {
 .interlude-text {
   font-weight: 500;
   font-size: 0.95rem;
-  color: #fff;
+  color: var(--color-text);
   white-space: nowrap;
 }
 
 .interlude-loader {
   width: 40px;
   height: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(128, 128, 128, 0.2);
   border-radius: 2px;
   overflow: hidden;
   position: relative;
@@ -222,17 +282,19 @@ input {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--bg-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .modal {
-  background-color: var(--color-surface);
+  background-color: var(--bg-card);
   padding: 2rem;
   border-radius: 8px;
   min-width: 300px;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
 }
 
 /* PERT Results Styles */
@@ -247,13 +309,13 @@ input {
 
 .pert-table th {
   text-align: left;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid var(--color-border);
   padding: 0.5rem;
 }
 
 .pert-table td {
   padding: 0.5rem;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .pert-score-cell {
@@ -273,16 +335,16 @@ input {
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #333;
-  color: #fff;
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
   padding: 0.5rem 0.8rem;
   border-radius: 4px;
   font-size: 0.8rem;
   white-space: nowrap;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 8px var(--color-shadow);
   pointer-events: none;
-  border: 1px solid #444;
+  border: 1px solid var(--color-border);
   margin-bottom: 0.5rem;
 }
 
@@ -306,7 +368,7 @@ input {
 .stat-footer {
   margin-top: 1rem;
   padding: 0.75rem 1.25rem;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--color-pill-bg);
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
@@ -326,14 +388,14 @@ input {
 .stat-label {
   font-size: 0.7rem;
   text-transform: uppercase;
-  color: #888;
+  color: var(--color-text-muted);
   letter-spacing: 0.5px;
 }
 
 .stat-value-large {
   font-size: 1.4rem;
   font-weight: bold;
-  color: #fff;
+  color: var(--color-text);
   line-height: 1;
 }
 
@@ -355,7 +417,7 @@ input {
 .guide-toggle button {
   background: none;
   border: none;
-  color: #888;
+  color: var(--color-text-muted);
   cursor: pointer;
   font-size: 0.8rem;
   text-decoration: underline;
@@ -365,9 +427,10 @@ input {
 .guide-panel {
   margin-top: 0.5rem;
   padding: 1rem;
-  background-color: #333;
+  background-color: var(--color-surface-hover);
   border-radius: 8px;
   font-size: 0.9rem;
+  color: var(--color-text);
 }
 
 .guide-panel h4 {
@@ -394,7 +457,7 @@ input {
 
 .participant-item {
   padding: 0.5rem;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -432,10 +495,10 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #444;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  background-color: #2a2a2a;
-  color: #aaa;
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
   cursor: pointer;
   font-size: 1.2rem;
   font-weight: bold;
@@ -443,13 +506,13 @@ input {
 }
 
 .voting-card:hover {
-  background-color: #333;
+  background-color: var(--color-surface-hover);
 }
 
 .voting-card.selected {
   border: 2px solid #646cff;
   background-color: rgba(100, 108, 255, 0.2);
-  color: #fff;
+  color: var(--color-text);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
@@ -462,7 +525,7 @@ input {
 .pert-label {
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
-  color: #aaa;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -567,7 +630,7 @@ input {
   position: relative;
   width: 48px;
   height: 24px;
-  background-color: #444;
+  background-color: var(--color-surface-active);
   border-radius: 12px;
   margin-right: 0.75rem;
   transition: background-color 0.2s;
@@ -620,12 +683,12 @@ input {
 .home-footer {
   margin-top: 3rem;
   font-size: 0.8rem;
-  color: #666;
-  opacity: 0.8;
+  color: var(--color-text-muted);
+  opacity: 0.9;
 }
 
 .home-footer a {
-  color: #888;
+  color: var(--color-text-muted);
   text-decoration: none;
   font-weight: bold;
   transition: color 0.2s;
@@ -659,14 +722,14 @@ input {
 .your-vote-stddev {
   font-size: 2.5rem;
   font-weight: bold;
-  color: #aaa;
+  color: var(--color-text-muted);
   line-height: 1;
 }
 
 .your-vote-details {
   display: flex;
   justify-content: space-between;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--color-pill-bg);
   padding: 0.5rem;
   border-radius: 4px;
 }
@@ -680,7 +743,7 @@ input {
 .your-vote-detail-item .label {
   font-size: 0.6rem;
   text-transform: uppercase;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .your-vote-detail-item .value {
@@ -715,36 +778,36 @@ input {
 
 .persona-desc {
   font-style: italic;
-  color: #ccc;
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
 }
 
 /* Risk Variants */
 .risk-high {
-  border-color: #f44336;
-  background-color: rgba(244, 67, 54, 0.1);
+  border-color: var(--color-risk-high-border);
+  background-color: var(--color-risk-high-bg);
 }
 
 .risk-medium {
-  border-color: #ff9800;
-  background-color: rgba(255, 152, 0, 0.1);
+  border-color: var(--color-risk-medium-border);
+  background-color: var(--color-risk-medium-bg);
 }
 
 .risk-low {
-  border-color: #4caf50;
-  background-color: rgba(76, 175, 80, 0.1);
+  border-color: var(--color-risk-low-border);
+  background-color: var(--color-risk-low-bg);
 }
 
 .risk-text-high {
-  color: #f44336;
+  color: var(--color-risk-high-text);
 }
 
 .risk-text-medium {
-  color: #ff9800;
+  color: var(--color-risk-medium-text);
 }
 
 .risk-text-low {
-  color: #4caf50;
+  color: var(--color-risk-low-text);
 }
 
 
@@ -756,7 +819,7 @@ input {
 
 .your-vote-label {
   font-size: 0.7rem;
-  color: #888;
+  color: var(--color-text-muted);
   text-transform: uppercase;
 }
 
@@ -767,10 +830,11 @@ input {
   align-items: center;
   padding: 1rem 2rem;
   /* Add horizontal padding */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--color-border-subtle);
   width: 100%;
   box-sizing: border-box;
   background-color: var(--color-bg);
+  transition: background-color 0.3s ease;
   /* Ensure it sits above content if we add sticky later */
 }
 
@@ -798,7 +862,6 @@ input {
 }
 
 
-
 /* Brand Link - De-emphasized */
 .brand-link {
   display: flex;
@@ -815,7 +878,7 @@ input {
 
 .brand-link:hover {
   opacity: 1;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--color-pill-bg);
   transform: translateY(-1px);
 }
 
@@ -839,14 +902,14 @@ input {
 .brand-text-small {
   font-weight: 500;
   font-size: 1.1rem;
-  color: #ccc;
+  color: var(--color-text-secondary);
   letter-spacing: 0.5px;
 }
 
 .divider-vertical {
   width: 1px;
   height: 20px;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-border-subtle);
   margin: 0 0.5rem;
 }
 
@@ -898,7 +961,7 @@ input {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--color-pill-bg);
   padding: 0.3rem 0.6rem;
   border-radius: 20px;
   font-size: 0.9rem;
@@ -927,8 +990,8 @@ input {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background-color: #333;
-  color: #ccc;
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-secondary);
 }
 
 .status-dot {
@@ -978,27 +1041,27 @@ input {
   align-items: center;
   justify-content: space-between;
   padding: 0.8rem 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-pill-bg);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 8px;
   transition: all 0.2s;
 }
 
 .deck-summary:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-pill-hover);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
 .deck-summary-text {
   font-size: 0.9rem;
-  color: #ccc;
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .deck-summary-label {
-  color: #888;
+  color: var(--color-text-muted);
   font-weight: 500;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -1006,7 +1069,7 @@ input {
 }
 
 .deck-summary-value {
-  color: #fff;
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -1029,8 +1092,8 @@ input {
 .deck-panel {
   margin-top: 0.5rem;
   padding: 1rem;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 8px;
   animation: slideDown 0.2s ease-out;
 }
@@ -1057,7 +1120,7 @@ input {
 .deck-panel-title {
   margin: 0;
   font-size: 0.85rem;
-  color: #888;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -1073,7 +1136,7 @@ input {
 }
 
 .deck-close-btn:hover {
-  color: #fff;
+  color: var(--color-text);
 }
 
 /* Preset Grid */
@@ -1090,7 +1153,7 @@ input {
   align-items: center;
   justify-content: center;
   padding: 0.8rem 0.5rem;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--color-pill-bg);
   border: 1px solid transparent;
   border-radius: 6px;
   cursor: pointer;
@@ -1099,7 +1162,7 @@ input {
 }
 
 .deck-option:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-pill-hover);
 }
 
 .deck-option.active {
@@ -1111,7 +1174,7 @@ input {
 .deck-option-name {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #ddd;
+  color: var(--color-text-secondary);
   margin-bottom: 0.3rem;
 }
 
@@ -1121,7 +1184,7 @@ input {
 
 .deck-option-values {
   font-size: 0.7rem;
-  color: #888;
+  color: var(--color-text-muted);
   font-family: monospace;
 }
 
@@ -1132,7 +1195,7 @@ input {
   align-items: center;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .deck-custom-label {
@@ -1143,10 +1206,10 @@ input {
 .deck-custom-input {
   flex: 1;
   padding: 0.5rem;
-  background-color: rgba(0, 0, 0, 0.3);
-  border: 1px solid #444;
+  background-color: var(--bg-input);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  color: #fff;
+  color: var(--color-text);
   font-size: 0.9rem;
 }
 
@@ -1158,17 +1221,17 @@ input {
 .deck-set-btn {
   padding: 0.5rem 1rem;
   font-size: 0.85rem;
-  background-color: #333;
-  color: #ccc;
-  border: 1px solid #555;
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .deck-set-btn:hover {
-  background-color: #444;
-  color: #fff;
+  background-color: var(--color-surface-active);
+  color: var(--color-text);
 }
 
 .btn-icon {
@@ -1184,8 +1247,8 @@ input {
   gap: 0.8rem;
   padding: 0.4rem 1rem;
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: var(--color-pill-bg);
+  border: 1px solid var(--color-border-subtle);
   transition: all 0.3s ease;
 }
 
@@ -1200,45 +1263,18 @@ input {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #ddd;
+  color: var(--color-text-secondary);
 }
 
 .status-help {
   font-size: 0.75rem;
-  color: #888;
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: #666;
-  flex-shrink: 0;
-}
-
-/* Status variants */
 .section-status.status-voting {
   border-color: rgba(46, 196, 182, 0.2);
   background-color: rgba(46, 196, 182, 0.05);
-}
-
-.status-voting .status-dot {
-  background-color: var(--color-secondary);
-  box-shadow: 0 0 10px rgba(46, 196, 182, 0.6);
-  animation: pulse 2s infinite;
-}
-
-.status-voting .status-label {
-  color: var(--color-secondary);
-}
-
-.status-revealed .status-dot {
-  background-color: var(--color-primary);
-}
-
-.status-revealed .status-label {
-  color: var(--color-primary);
 }
 
 @keyframes pulse {
@@ -1276,7 +1312,6 @@ input {
 
   .room-footer {
     display: none;
-    /* Hide on mobile if space is tight, or keep small */
   }
 
   .header-actions {
@@ -1336,7 +1371,6 @@ input {
   }
 
   .share-btn-soft {
-    /* Allow it to sit naturally in the flex container */
     width: auto;
     margin-top: 0;
   }
@@ -1388,14 +1422,14 @@ input {
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #333;
-  color: #fff;
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
   padding: 0.8rem 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px var(--color-shadow);
   z-index: 1000;
   animation: fadeIn 0.3s ease-in-out;
-  border: 1px solid #444;
+  border: 1px solid var(--color-border);
 }
 
 @keyframes fadeIn {
@@ -1433,7 +1467,7 @@ input {
 .room-footer {
   text-align: center;
   padding: 2rem 0;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
   margin-top: auto;
   opacity: 0.6;
@@ -1454,4 +1488,25 @@ input {
 .room-footer a:hover {
   color: var(--color-primary);
   border-bottom-style: solid;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text);
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--color-pill-hover);
 }

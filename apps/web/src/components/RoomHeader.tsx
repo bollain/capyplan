@@ -2,6 +2,7 @@ import { RoomPhase, EstimationMode } from '@capyplan/protocol';
 import { Link } from 'react-router-dom';
 import logo from '../assets/capyplan.png';
 import SessionStatus from './SessionStatus';
+import ThemeToggle from './ThemeToggle';
 
 interface Props {
     roomId: string;
@@ -61,6 +62,8 @@ export default function RoomHeader({ roomId, roomName, estimationMode, phase, us
                     voteCount={voteCount}
                     totalParticipants={totalParticipants}
                 />
+
+                <ThemeToggle />
 
                 <button
                     onClick={onInvite}

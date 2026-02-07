@@ -12,6 +12,8 @@ const emitToSocket = (data: unknown) => {
     socketListeners.forEach(l => l(data));
 };
 
+import { ThemeProvider } from '../../context/ThemeContext';
+
 // Mock clipboard
 Object.defineProperty(navigator, 'clipboard', {
     value: {
@@ -71,11 +73,13 @@ describe('Room Page', () => {
 
     const renderRoom = (roomId = 'room-123') => {
         render(
-            <MemoryRouter initialEntries={[`/room/${roomId}`]}>
-                <Routes>
-                    <Route path="/room/:roomId" element={<Room />} />
-                </Routes>
-            </MemoryRouter>
+            <ThemeProvider>
+                <MemoryRouter initialEntries={[`/room/${roomId}`]}>
+                    <Routes>
+                        <Route path="/room/:roomId" element={<Room />} />
+                    </Routes>
+                </MemoryRouter>
+            </ThemeProvider>
         );
     };
 
