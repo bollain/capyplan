@@ -666,17 +666,27 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
+}
 
-  h1 {
-    font-size: 3rem;
-  }
+.logo-header h1 {
+  font-size: 3rem;
+  margin: 0;
+  line-height: 1;
 }
 
 .logo-img {
-  padding-top: 8px;
+  width: 160px;
+  /* pick what looks right */
+  aspect-ratio: 549 / 311;
+  height: auto;
+  /* derived */
+  display: block;
+  /* avoids inline img baseline weirdness */
+  object-fit: contain;
   transform: scale(0.9);
-  max-width: 100px;
-  /* Removed marginBottom since flex gap handles spacing */
+  flex: 0 0 auto;
+  width: 90px;
+  height: 58px;
 }
 
 /* Home Footer */

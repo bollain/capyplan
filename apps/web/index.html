@@ -1,12 +1,57 @@
 <!doctype html>
 <html lang="en">
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-<link rel="shortcut icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
-<title>CapyPlan</title>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="description" content="CapyPlan is a collaborative estimation and planning tool for agile teams." />
+  <link rel="preload" href="./src/assets/capyplan.png" as="image" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <title>CapyPlan</title>
+
+  <!-- Prevent theme flash: set data-theme before CSS/React paint -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('capyplan_theme');
+        var theme =
+          saved === 'light' || saved === 'dark'
+            ? saved
+            : window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <meta name="color-scheme" content="dark light" />
+
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    /* Critical background to prevent white flash before CSS loads */
+    html[data-theme="dark"],
+    html[data-theme="dark"] body {
+      background: #1a1a1a;
+      color: #fff;
+    }
+
+    html[data-theme="light"],
+    html[data-theme="light"] body {
+      background: #f5f5f5;
+      color: #111;
+    }
+  </style>
 </head>
 
 <body>
