@@ -107,7 +107,9 @@ export default function Room() {
                 setRoomState(data.state);
             } else if (data.type === 'ROOM_EVENT') {
                 if (data.event === 'REVEALED') {
-                    setToastMessage(`${data.payload.userName} revealed the estimates!`);
+                    const name = data.payload.userName;
+                    const truncatedName = name.length > 20 ? name.substring(0, 20) + '...' : name;
+                    setToastMessage(`${truncatedName} revealed the estimates!`);
                     setShowToast(true);
                 }
             } else if (data.type === 'ERROR') {

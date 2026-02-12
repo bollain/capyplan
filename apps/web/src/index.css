@@ -318,6 +318,13 @@ input {
   border-bottom: 1px solid var(--color-border-subtle);
 }
 
+.pert-table td:first-child {
+  max-width: 12ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .pert-score-cell {
   font-weight: bold;
   position: relative;
