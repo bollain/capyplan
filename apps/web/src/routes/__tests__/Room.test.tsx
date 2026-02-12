@@ -101,7 +101,7 @@ describe('Room Page', () => {
 
     it('displays loading state initially', () => {
         renderRoom();
-        expect(screen.getByText('Loading Room...')).toBeInTheDocument();
+        expect(screen.getByText('Capy is sniffing for your room...')).toBeInTheDocument();
     });
 
     it('renders room state after receiving snapshot', async () => {
