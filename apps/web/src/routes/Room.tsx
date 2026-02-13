@@ -102,8 +102,6 @@ export default function Room() {
             const data = raw as ServerMessage;
             if (!mounted) return;
             if (data.type === 'ROOM_SNAPSHOT') {
-                console.log('Received room snapshot', data.state);
-                console.log({ data });
                 setRoomState(data.state);
             } else if (data.type === 'ROOM_EVENT') {
                 if (data.event === 'REVEALED') {
@@ -167,7 +165,6 @@ export default function Room() {
             </div>
         );
     }
-    console.log({ RoomPhase });
 
     const myClientId = localStorage.getItem('capyplan_client_id');
     const isLeader = roomState.leaderId === myClientId;
