@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { socket } from '../lib/socket';
-import { RoomState, ServerMessage, RoomPhase } from '@capyplan/protocol';
+import { RoomState, ServerMessage } from '@capyplan/protocol';
 import logo from '../assets/capyplan.png';
 import RoomHeader from '../components/RoomHeader';
 import Stage from '../components/Stage';
