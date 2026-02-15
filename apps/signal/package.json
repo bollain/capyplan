@@ -6,10 +6,16 @@
         "dev": "tsx watch src/index.ts",
         "build": "pnpm --filter @capyplan/protocol build && tsc",
         "start": "node dist/index.js",
-        "test": "vitest"
+        "test": "vitest",
+        "seed": "tsx src/scripts/seed.ts"
     },
     "dependencies": {
         "@capyplan/protocol": "workspace:*",
+        "@capyplan/db": "workspace:*",
+        "dotenv": "^16.4.1",
+        "fastify": "^4.26.1",
+        "@fastify/cors": "^9.0.1",
+        "drizzle-orm": "^0.29.3",
         "ws": "^8.16.0",
         "zod": "^3.22.4"
     },

@@ -72,6 +72,9 @@ export default function RoomHeader({ roomId, roomName, estimationMode, phase, us
                 >
                     <span className="btn-icon">+</span> Invite Players
                 </button>
+                <Link to={`/room/${roomId}/analytics`} className="analytics-btn" title="View Trends">
+                    <span>Stats</span>
+                </Link>
             </div>
         </header>
     );

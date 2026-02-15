@@ -7,7 +7,9 @@ import {
     RoomPhase,
     ClientMessage
 } from '@capyplan/protocol';
-import { calculateEstimate, EstimationResult } from './logic.js';
+import { calculateEstimate, EstimationResult, calculateGroupStats } from './logic.js';
+import { db, rooms as dbRooms, votingSessions, votes } from './db.js';
+import { startApiServer } from './api.js';
 
 const wss = new WebSocketServer({ port: 3001 });
 
@@ -23,6 +25,8 @@ interface ServerParticipant {
 
 interface ServerRoomState extends Omit<RoomState, 'participants'> {
     participants: ServerParticipant[];
+    isPersistent?: boolean;
+    dbId?: string; // UUID from DB
 }
 
 // In-memory store: RoomID -> ServerRoomState
@@ -39,6 +43,32 @@ interface SocketState {
 const socketMap = new Map<WebSocket, SocketState>();
 
 const GRACE_PERIOD_MS = 60000; // 60 seconds
+
+// Load persistent rooms on startup
+(async () => {
+    // Start API
+    startApiServer();
+
+    if (!db) return;
+    try {
+        const persistentRooms = await db.select().from(dbRooms);
+        console.log(`Loaded ${persistentRooms.length} persistent rooms`);
+        for (const pRoom of persistentRooms) {
+            rooms.set(pRoom.slug, {
+                roomId: pRoom.slug,
+                roomName: pRoom.name,
+                leaderId: '', // No leader initially
+                participants: [],
+                phase: RoomPhase.VOTING,
+                estimationMode: EstimationMode.PERT,
+                isPersistent: true,
+                dbId: pRoom.id
+            });
+        }
+    } catch (e) {
+        console.error('Failed to load persistent rooms', e);
+    }
+})();
 
 console.log('Signal server running on ws://localhost:3001');
 
@@ -175,15 +205,11 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             if (!socketState.roomId) return;
             const room = rooms.get(socketState.roomId);
             if (!room) return;
-            console.log(`Reveal requested by ${socketState.userId}`);
-            console.log(`Leader is ${room.leaderId}`);
-            console.log(`Current phase is ${room.phase}`);
+
+            // Prevent duplicate reveals/saves
+            if (room.phase === RoomPhase.REVEALED) return;
 
             console.log(`Reveal requested by ${socketState.userId}`);
-            console.log(`Leader is ${room.leaderId}`);
-            console.log(`Current phase is ${room.phase}`);
-
-            // Permission check removed: Any participant can reveal
 
             room.phase = RoomPhase.REVEALED;
 
@@ -198,6 +224,43 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
                     }
                 }
                 room.results = results;
+            }
+
+            // Save to DB immediately on Reveal
+            if (room.results && room.isPersistent && room.dbId && db) {
+                const resultsArg = Object.values(room.results) as EstimationResult[];
+                const { consensus, variance } = calculateGroupStats(resultsArg);
+
+                // Async save
+                (async () => {
+                    try {
+                        const [session] = await db.insert(votingSessions).values({
+                            roomId: room.dbId!,
+                            finalConsensus: consensus.toString(),
+                            variance: variance.toString(),
+                            participantCount: resultsArg.length
+                        }).returning();
+
+                        if (session) {
+                            const voteEntries = [];
+                            for (const [userId, result] of Object.entries(room.results!)) {
+                                const participant = room.participants.find(p => p.id === userId);
+                                voteEntries.push({
+                                    sessionId: session.id,
+                                    userClientId: userId,
+                                    userName: participant?.name || 'Unknown',
+                                    voteValue: (result as EstimationResult).score.toString()
+                                });
+                            }
+                            if (voteEntries.length > 0) {
+                                await db.insert(votes).values(voteEntries);
+                            }
+                            console.log(`Saved session ${session.id} for room ${room.roomName}`);
+                        }
+                    } catch (e) {
+                        console.error('Error saving session stats', e);
+                    }
+                })();
             }
 
             broadcastSnapshot(socketState.roomId);
@@ -216,6 +279,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             if (!room) return;
 
             // Permission check removed: Any participant can request next item
+
             room.phase = RoomPhase.VOTING;
             room.currentEstimates = undefined;
             room.results = undefined;
@@ -329,7 +393,16 @@ function cleanupParticipant(roomId: string, userId: string) {
     if (room.results) delete room.results[userId];
 
     if (room.participants.length === 0) {
-        rooms.delete(roomId);
+        if (room.isPersistent) {
+            // Reset state but keep room
+            room.leaderId = '';
+            room.currentEstimates = undefined;
+            room.results = undefined;
+            room.phase = RoomPhase.VOTING;
+            console.log(`Persistent room ${roomId} empty, kept in memory.`);
+        } else {
+            rooms.delete(roomId);
+        }
     } else {
         if (room.leaderId === userId) {
             const nextLeader = room.participants.find(p => p.connected) || room.participants[0];
