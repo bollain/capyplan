@@ -6,11 +6,16 @@ import path from 'path';
 const envPath = path.resolve(process.cwd(), '../../.env');
 dotenv.config({ path: envPath });
 
+if (!process.env.DATABASE_URL) {
+    console.error("❌ DATABASE_URL is not set. Please ensure you have configured it in your environment variables.");
+    process.exit(1);
+}
+
 export default {
     schema: './src/schema.ts',
     out: './drizzle',
     driver: 'pg',
     dbCredentials: {
-        connectionString: process.env.DATABASE_URL!,
+        connectionString: process.env.DATABASE_URL,
     },
 } satisfies Config;
