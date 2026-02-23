@@ -10,9 +10,11 @@ import {
 import { calculateEstimate, EstimationResult, calculateExtendedStats } from './logic.js';
 import { db, rooms as dbRooms, votingSessions, votes } from './db.js';
 import { eq } from 'drizzle-orm';
-import { startApiServer } from './api.js';
+import { fastify } from './api.js';
 
-const wss = new WebSocketServer({ port: 3001 });
+// We will attach the WebSocket server to fastify's underlying HTTP server
+const port = parseInt(process.env.PORT || '3001', 10);
+const wss = new WebSocketServer({ server: fastify.server });
 
 // Extended types for server-side state
 interface ServerParticipant {
@@ -47,8 +49,14 @@ const GRACE_PERIOD_MS = 60000; // 60 seconds
 
 // Load persistent rooms on startup
 (async () => {
-    // Start API
-    startApiServer();
+    // Start the unified HTTP/WS Server using Fastify
+    try {
+        await fastify.listen({ port, host: '0.0.0.0' });
+        console.log(`Signal & API Server running on port ${port}`);
+    } catch (err) {
+        fastify.log.error(err);
+        process.exit(1);
+    }
 
     if (!db) return;
     try {
@@ -72,7 +80,6 @@ const GRACE_PERIOD_MS = 60000; // 60 seconds
     }
 })();
 
-console.log('Signal server running on ws://localhost:3001');
 
 wss.on('connection', (ws) => {
     socketMap.set(ws, { ws });

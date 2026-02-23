@@ -70,15 +70,3 @@ fastify.get('/api/rooms/:slug/stats', async (request, reply) => {
     }
 });
 
-export async function startApiServer() {
-    try {
-        // Run on port 3002 to facilitate separate dev proxying if needed, or just direct calls.
-        // In prod, this would likely be same port as WS via integration, but separate is fine for now.
-        const port = 3002;
-        await fastify.listen({ port, host: '0.0.0.0' });
-        console.log(`API Server running on http://localhost:${port}`);
-    } catch (err) {
-        fastify.log.error(err);
-        process.exit(1);
-    }
-}
