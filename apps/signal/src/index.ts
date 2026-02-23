@@ -12,9 +12,8 @@ import { db, rooms as dbRooms, votingSessions, votes } from './db.js';
 import { eq } from 'drizzle-orm';
 import { fastify } from './api.js';
 
-// We will attach the WebSocket server to fastify's underlying HTTP server
 const port = parseInt(process.env.PORT || '3001', 10);
-const wss = new WebSocketServer({ server: fastify.server });
+const wss = new WebSocketServer({ noServer: true });
 
 // Extended types for server-side state
 interface ServerParticipant {
@@ -52,6 +51,17 @@ const GRACE_PERIOD_MS = 60000; // 60 seconds
     // Start the unified HTTP/WS Server using Fastify
     try {
         await fastify.listen({ port, host: '0.0.0.0' });
+
+        // Explicitly handle WebSocket Upgrades
+        fastify.server.on('upgrade', (request, socket, head) => {
+            // Only upgrade requests aiming for our root or raw websocket.
+            if (request.headers['upgrade'] === 'websocket') {
+                wss.handleUpgrade(request, socket, head, (ws) => {
+                    wss.emit('connection', ws, request);
+                });
+            }
+        });
+
         console.log(`Signal & API Server running on port ${port}`);
     } catch (err) {
         fastify.log.error(err);
