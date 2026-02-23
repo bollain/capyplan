@@ -48,6 +48,20 @@ describe('Signal Logic', () => {
             const result = calculatePert(payload);
             expect(result.score).toBeCloseTo(6.83, 2);
         });
+
+        it('handles swapped optimistic and pessimistic values via Math.abs', () => {
+            const payload: EstimatePayload = {
+                optimistic: 6,
+                mostLikely: 4,
+                pessimistic: 2
+            };
+            // Values are swapped, but formula should still treat it the same:
+            // Score = (6 + 4*4 + 2) / 6 = 24 / 6 = 4
+            const result = calculatePert(payload);
+            expect(result.score).toBe(4);
+            // StdDev = Math.abs(2 - 6) / 6 = 4 / 6 = 0.666...
+            expect(result.stdDev).toBeCloseTo(0.67, 2);
+        });
     });
 
     describe('calculateExtendedStats', () => {
