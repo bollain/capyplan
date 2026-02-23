@@ -1,4 +1,4 @@
-import { WebSocketServer, WebSocket } from 'ws';
+import { WebSocket } from 'ws';
 import {
     ClientMessageSchema,
     ServerMessage,
@@ -11,9 +11,13 @@ import { calculateEstimate, EstimationResult, calculateExtendedStats } from './l
 import { db, rooms as dbRooms, votingSessions, votes } from './db.js';
 import { eq } from 'drizzle-orm';
 import { fastify } from './api.js';
+import fastifyWebsocket from '@fastify/websocket';
 
 const port = parseInt(process.env.PORT || '3001', 10);
-const wss = new WebSocketServer({ noServer: true });
+
+// We keep our standalone wss instance for broadcasting by sharing it, or we broadcast via plugin.
+// Since we manually loop through `socketMap`, we don't need a formal wss server instance at all anymore!
+// The plugin provides us the raw sockets.
 
 // Extended types for server-side state
 interface ServerParticipant {
@@ -50,18 +54,36 @@ const GRACE_PERIOD_MS = 60000; // 60 seconds
 (async () => {
     // Start the unified HTTP/WS Server using Fastify
     try {
-        await fastify.listen({ port, host: '0.0.0.0' });
+        await fastify.register(fastifyWebsocket);
 
-        // Explicitly handle WebSocket Upgrades
-        fastify.server.on('upgrade', (request, socket, head) => {
-            // Only upgrade requests aiming for our root or raw websocket.
-            if (request.headers['upgrade'] === 'websocket') {
-                wss.handleUpgrade(request, socket, head, (ws) => {
-                    wss.emit('connection', ws, request);
-                });
-            }
+        // Bind the root route specifically for WebSockets
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        fastify.get('/', { websocket: true }, (connection: any) => {
+            const ws = connection.socket as import('ws').WebSocket;
+            socketMap.set(ws, { ws });
+
+            ws.on('message', (data: import('ws').RawData) => {
+                try {
+                    const raw = JSON.parse(data.toString());
+                    const parseResult = ClientMessageSchema.safeParse(raw);
+
+                    if (!parseResult.success) {
+                        sendError(ws, 'INVALID_ payload', parseResult.error.message);
+                        return;
+                    }
+
+                    handleMessage(ws, parseResult.data);
+                } catch {
+                    sendError(ws, 'PARSE_ERROR', 'Could not parse message JSON');
+                }
+            });
+
+            ws.on('close', () => {
+                handleSocketClose(ws);
+            });
         });
 
+        await fastify.listen({ port, host: '0.0.0.0' });
         console.log(`Signal & API Server running on port ${port}`);
     } catch (err) {
         fastify.log.error(err);
@@ -90,30 +112,6 @@ const GRACE_PERIOD_MS = 60000; // 60 seconds
     }
 })();
 
-
-wss.on('connection', (ws) => {
-    socketMap.set(ws, { ws });
-
-    ws.on('message', (data) => {
-        try {
-            const raw = JSON.parse(data.toString());
-            const parseResult = ClientMessageSchema.safeParse(raw);
-
-            if (!parseResult.success) {
-                sendError(ws, 'INVALID_ payload', parseResult.error.message);
-                return;
-            }
-
-            handleMessage(ws, parseResult.data);
-        } catch {
-            sendError(ws, 'PARSE_ERROR', 'Could not parse message JSON');
-        }
-    });
-
-    ws.on('close', () => {
-        handleSocketClose(ws);
-    });
-});
 
 function handleMessage(ws: WebSocket, message: ClientMessage) {
     const socketState = socketMap.get(ws);
