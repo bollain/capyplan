@@ -16,15 +16,13 @@ fastify.get('/api/rooms/:slug/stats', async (request, reply) => {
     const { slug } = request.params as { slug: string };
 
     try {
-        // Use query builder to fetch room with sessions and votes
+        // Use query builder to fetch room with sessions
         const roomData = await db.query.rooms.findFirst({
             where: eq(rooms.slug, slug),
             with: {
                 sessions: {
                     orderBy: desc(votingSessions.createdAt),
-                    with: {
-                        votes: true
-                    }
+                    limit: 50 // Limit to last 50 sessions for performance
                 }
             }
         });
@@ -36,19 +34,21 @@ fastify.get('/api/rooms/:slug/stats', async (request, reply) => {
         // Process Data for Frontend
         const consensusHistory = roomData.sessions.map(s => ({
             date: s.createdAt,
-            consensus: parseFloat(s.finalConsensus || '0'),
-            variance: parseFloat(s.variance || '0')
-        })).reverse(); // Oldest to newest for charts
+            consensus: parseFloat(s.mean || '0'),
+            variance: parseFloat(s.stddev || '0')
+        })).reverse();
 
         const voteDist: Record<string, number> = {};
         let totalVotes = 0;
 
         roomData.sessions.forEach(s => {
-            s.votes.forEach(v => {
-                const val = v.voteValue;
-                voteDist[val] = (voteDist[val] || 0) + 1;
-                totalVotes++;
-            });
+            totalVotes += s.voteCount;
+            if (s.histogram) {
+                const hist = s.histogram as Record<string, number>;
+                for (const [val, count] of Object.entries(hist)) {
+                    voteDist[val] = (voteDist[val] || 0) + count;
+                }
+            }
         });
 
         const participation = roomData.sessions.map(s => ({

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Home from '../Home';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from '../../context/ThemeContext';
+import { ThemeProvider } from '../../context/ThemeProvider';
 
 // Mock the socket
 vi.mock('../../lib/socket', () => ({

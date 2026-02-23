@@ -10,9 +10,9 @@ describe('calculateTeamStats', () => {
         };
         const stats = calculateTeamStats(results);
         // Avg: (1+3+5)/3 = 3.00
-        // StdDev: sqrt( ((1-3)^2 + (3-3)^2 + (5-3)^2) / 2 ) = sqrt( (4+0+4) / 2 ) = sqrt(4) = 2.00
+        // StdDev (Population): sqrt( ((1-3)^2 + (3-3)^2 + (5-3)^2) / 3 ) = sqrt( (4+0+4) / 3 ) = sqrt(2.666) = 1.63
         expect(stats.avgScore).toBe('3.00');
-        expect(stats.teamStdDev).toBe('2.00');
+        expect(stats.teamStdDev).toBe('1.63');
         expect(stats.disagreementLevel).toBe('High'); // >= 1.0 is High
     });
 

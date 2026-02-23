@@ -16,29 +16,42 @@ export function calculateTeamStats(results: Record<string, { score: number }>): 
         .map((r) => r.score)
         .filter(n => typeof n === 'number');
 
-    const avg = scores.length > 0
-        ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2)
-        : '0.00';
+    const count = scores.length;
 
-    const teamStdDevVal = scores.length > 1
-        ? Math.sqrt(scores.map(x => Math.pow(x - parseFloat(avg), 2)).reduce((a, b) => a + b) / (scores.length - 1))
-        : 0;
+    if (count === 0) {
+        return {
+            avgScore: '0.00',
+            teamStdDev: '0.00',
+            disagreementLevel: 'Low',
+            disagreementColor: '#4caf50'
+        };
+    }
 
-    const teamStdDev = teamStdDevVal.toFixed(2);
+    const sum = scores.reduce((a, b) => a + b, 0);
+    const mean = sum / count;
+
+    // Use Population Standard Deviation (divide by N)
+    // Matches backend logic in apps/signal/src/logic.ts
+    const squareDiffs = scores.map(score => Math.pow(score - mean, 2));
+    const sumSquareDiff = squareDiffs.reduce((a, b) => a + b, 0);
+    const variance = sumSquareDiff / count; // Population variance
+    const stdDevVal = Math.sqrt(variance);
+
+    const teamStdDev = stdDevVal.toFixed(2);
 
     let disagreementLevel: PertAnalysis['disagreementLevel'] = 'Low';
     let disagreementColor = '#4caf50';
 
-    if (teamStdDevVal >= 1.0) {
+    if (stdDevVal >= 1.0) {
         disagreementLevel = 'High';
         disagreementColor = '#f44336';
-    } else if (teamStdDevVal >= 0.5) {
+    } else if (stdDevVal >= 0.5) {
         disagreementLevel = 'Medium';
         disagreementColor = '#ff9800';
     }
 
     return {
-        avgScore: avg,
+        avgScore: mean.toFixed(2),
         teamStdDev,
         disagreementLevel,
         disagreementColor

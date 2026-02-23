@@ -12,7 +12,7 @@ const emitToSocket = (data: unknown) => {
     socketListeners.forEach(l => l(data));
 };
 
-import { ThemeProvider } from '../../context/ThemeContext';
+import { ThemeProvider } from '../../context/ThemeProvider';
 
 // Mock clipboard
 Object.defineProperty(navigator, 'clipboard', {

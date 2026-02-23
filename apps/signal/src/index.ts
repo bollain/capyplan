@@ -7,8 +7,9 @@ import {
     RoomPhase,
     ClientMessage
 } from '@capyplan/protocol';
-import { calculateEstimate, EstimationResult, calculateGroupStats } from './logic.js';
+import { calculateEstimate, EstimationResult, calculateExtendedStats } from './logic.js';
 import { db, rooms as dbRooms, votingSessions, votes } from './db.js';
+import { eq } from 'drizzle-orm';
 import { startApiServer } from './api.js';
 
 const wss = new WebSocketServer({ port: 3001 });
@@ -61,6 +62,7 @@ const GRACE_PERIOD_MS = 60000; // 60 seconds
                 participants: [],
                 phase: RoomPhase.VOTING,
                 estimationMode: EstimationMode.PERT,
+                availableEstimates: pRoom.defaultDeck || [1, 2, 3, 4, 5, 8], // Use DB deck or default fallback
                 isPersistent: true,
                 dbId: pRoom.id
             });
@@ -114,6 +116,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
                     participants: [],
                     phase: RoomPhase.VOTING,
                     estimationMode: EstimationMode.PERT,
+                    availableEstimates: [1, 2, 3, 4, 5, 8], // Default to Vanilla deck
                 };
                 rooms.set(roomId, room);
             }
@@ -148,6 +151,9 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             // valid to ensure leaderId points to someone.
             // If current leader is gone/removed, we might've already reassigned in disconnect logic.
             // But if this is a fresh room, init logic handled it.
+            if (room.isPersistent && !room.leaderId) {
+                room.leaderId = clientId;
+            }
 
             // Map socket to this clientId
             socketState.roomId = roomId;
@@ -229,27 +235,41 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             // Save to DB immediately on Reveal
             if (room.results && room.isPersistent && room.dbId && db) {
                 const resultsArg = Object.values(room.results) as EstimationResult[];
-                const { consensus, variance } = calculateGroupStats(resultsArg);
+                const stats = calculateExtendedStats(resultsArg);
 
                 // Async save
                 (async () => {
                     try {
+                        const deckSnapshot = room.availableEstimates || null;
+                        const totalParticipants = room.participants.length;
+
                         const [session] = await db.insert(votingSessions).values({
                             roomId: room.dbId!,
-                            finalConsensus: consensus.toString(),
-                            variance: variance.toString(),
-                            participantCount: resultsArg.length
+                            deckSnapshot,
+                            participantCount: totalParticipants,
+                            voteCount: resultsArg.length,
+                            mean: stats.mean.toString(),
+                            stddev: stats.stddev.toString(),
+                            median: stats.median.toString(),
+                            minVote: stats.min.toString(),
+                            maxVote: stats.max.toString(),
+                            histogram: stats.histogram
                         }).returning();
 
                         if (session) {
                             const voteEntries = [];
                             for (const [userId, result] of Object.entries(room.results!)) {
                                 const participant = room.participants.find(p => p.id === userId);
+                                const estimate = room.currentEstimates?.[userId] as object;
+                                const typedResult = result as EstimationResult;
+
                                 voteEntries.push({
                                     sessionId: session.id,
                                     userClientId: userId,
                                     userName: participant?.name || 'Unknown',
-                                    voteValue: (result as EstimationResult).score.toString()
+                                    voteValue: typedResult.score.toString(),
+                                    uncertainty: typedResult.stdDev?.toString(),
+                                    payload: estimate
                                 });
                             }
                             if (voteEntries.length > 0) {
@@ -300,6 +320,22 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
 
             room.availableEstimates = message.availableEstimates;
             broadcastSnapshot(socketState.roomId);
+
+            // Persist the deck if it's a persistent room
+            if (room.isPersistent && room.dbId && db) {
+                const dbId = room.dbId; // Capture for closure
+                (async () => {
+                    try {
+                        await db.update(dbRooms)
+                            .set({ defaultDeck: message.availableEstimates })
+                            .where(eq(dbRooms.id, dbId));
+                        console.log(`Updated default deck for persistent room ${dbId}`);
+                    } catch (e) {
+                        console.error('Failed to update default deck', e);
+                    }
+                })();
+            }
+
             break;
         }
     }
