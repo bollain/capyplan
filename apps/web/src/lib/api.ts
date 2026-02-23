@@ -14,7 +14,7 @@ export interface RoomStats {
     totalVotes: number;
 }
 
-const API_BASE = 'http://localhost:3002/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
 export async function fetchRoomStats(slug: string): Promise<RoomStats> {
     const res = await fetch(`${API_BASE}/rooms/${slug}/stats`);
