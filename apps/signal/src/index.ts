@@ -9,7 +9,80 @@ import {
 } from '@capyplan/protocol';
 import { calculateEstimate, EstimationResult } from './logic.js';
 
-const wss = new WebSocketServer({ port: 3001 });
+// We put wss inside a function or just delay it. Since there's top-level logic, let's keep it global but allow configuring.
+let wss: WebSocketServer | null = null;
+let interval: ReturnType<typeof setInterval> | null = null;
+
+export function startServer(port: number = 3001): WebSocketServer {
+    if (wss) {
+        return wss;
+    }
+
+    wss = new WebSocketServer({ port });
+    console.log(`Signal server running on ws://localhost:${port}`);
+
+    wss.on('connection', (ws) => {
+        socketMap.set(ws, { ws, isAlive: true });
+
+        ws.on('pong', () => {
+            const state = socketMap.get(ws);
+            if (state) state.isAlive = true;
+        });
+
+        ws.on('message', (data) => {
+            try {
+                const raw = JSON.parse(data.toString());
+                const parseResult = ClientMessageSchema.safeParse(raw);
+
+                if (!parseResult.success) {
+                    sendError(ws, 'INVALID_ payload', parseResult.error.message);
+                    return;
+                }
+
+                handleMessage(ws, parseResult.data);
+            } catch {
+                sendError(ws, 'PARSE_ERROR', 'Could not parse message JSON');
+            }
+        });
+
+        ws.on('close', () => {
+            handleSocketClose(ws);
+        });
+    });
+
+    interval = setInterval(() => {
+        for (const [ws, state] of socketMap.entries()) {
+            if (ws.readyState !== WebSocket.OPEN) {
+                handleSocketClose(ws);
+                continue;
+            }
+
+            if (!state.isAlive) {
+                handleSocketClose(ws);
+                try { ws.terminate(); } catch { /* ignore */ }
+                continue;
+            }
+
+            state.isAlive = false;
+
+            try {
+                ws.ping();
+            } catch {
+                handleSocketClose(ws);
+                try { ws.terminate(); } catch { /* ignore */ }
+            }
+        }
+    }, PING_INTERVAL_MS);
+
+    wss.on('close', () => {
+        if (interval) clearInterval(interval);
+        wss = null;
+        socketMap.clear();
+        rooms.clear();
+    });
+
+    return wss;
+}
 
 // Extended types for server-side state
 interface ServerParticipant {
@@ -34,37 +107,20 @@ interface SocketState {
     roomId?: string;
     userId?: string; // clientId
     ws: WebSocket;
+    isAlive: boolean;
 }
 
-const socketMap = new Map<WebSocket, SocketState>();
+export const socketMap = new Map<WebSocket, SocketState>();
 
 const GRACE_PERIOD_MS = 60000; // 60 seconds
+const PING_INTERVAL_MS = 30000; // 30 seconds
 
-console.log('Signal server running on ws://localhost:3001');
+// Start server if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
+    startServer(3001);
+}
 
-wss.on('connection', (ws) => {
-    socketMap.set(ws, { ws });
-
-    ws.on('message', (data) => {
-        try {
-            const raw = JSON.parse(data.toString());
-            const parseResult = ClientMessageSchema.safeParse(raw);
-
-            if (!parseResult.success) {
-                sendError(ws, 'INVALID_ payload', parseResult.error.message);
-                return;
-            }
-
-            handleMessage(ws, parseResult.data);
-        } catch {
-            sendError(ws, 'PARSE_ERROR', 'Could not parse message JSON');
-        }
-    });
-
-    ws.on('close', () => {
-        handleSocketClose(ws);
-    });
-});
+// Removed top-level setup which is now in startServer
 
 function handleMessage(ws: WebSocket, message: ClientMessage) {
     const socketState = socketMap.get(ws);
@@ -129,7 +185,9 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             // so we need to be careful not to remove the user if they are actually connected on a new socket.
             // We can prevent the disconnect logic from removing the user by checking connection state.
 
-            broadcastSnapshot(roomId);
+            sendSnapshotTo(ws, roomId);
+            // Broadcast full snapshot to everyone but this ws so they see the new active participant
+            broadcastSnapshot(roomId, ws);
             break;
         }
         case 'LEAVE_ROOM':
@@ -339,7 +397,29 @@ function cleanupParticipant(roomId: string, userId: string) {
     }
 }
 
-function broadcastSnapshot(roomId: string) {
+function sendSnapshotTo(ws: WebSocket, roomId: string) {
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    const msg: ServerMessage = {
+        type: 'ROOM_SNAPSHOT',
+        state: {
+            ...room,
+            participants: room.participants.map(p => ({
+                id: p.id,
+                name: p.name,
+                connected: p.connected,
+                isSpectator: p.isSpectator,
+            }))
+        },
+    };
+
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(msg));
+    }
+}
+
+function broadcastSnapshot(roomId: string, excludeWs?: WebSocket) {
     const room = rooms.get(roomId);
     if (!room) return;
 
@@ -361,7 +441,7 @@ function broadcastSnapshot(roomId: string) {
 
     // Inefficient broadcast O(N) over all sockets, good enough for toy app
     for (const [ws, state] of socketMap.entries()) {
-        if (state.roomId === roomId && ws.readyState === WebSocket.OPEN) {
+        if (state.roomId === roomId && ws.readyState === WebSocket.OPEN && ws !== excludeWs) {
             ws.send(payload);
         }
     }

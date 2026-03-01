@@ -5,11 +5,24 @@ export class SocketClient {
     private static instance: SocketClient;
     private ws: WebSocket | null = null;
     private listeners: Set<(msg: unknown) => void> = new Set();
+    private reconnectTimeout: number | null = null;
+    private reconnectAttempts = 0;
+    private lastJoinParams: unknown = null;
 
     // Quick hack to restore connection/state if the user navigates
     // In a real app, use Context to hold the socket instance.
 
-    private constructor() { }
+    private constructor() {
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                this.connect();
+            }
+        });
+
+        window.addEventListener('online', () => {
+            this.connect();
+        });
+    }
 
     static getInstance(): SocketClient {
         if (!SocketClient.instance) {
@@ -23,6 +36,11 @@ export class SocketClient {
     connect() {
         if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
             return;
+        }
+
+        if (this.ws && (this.ws.readyState === WebSocket.CLOSING || this.ws.readyState === WebSocket.CLOSED)) {
+            try { this.ws.close(); } catch { /* ignore */ }
+            this.ws = null;
         }
 
         // Production override or Local fallback
@@ -52,17 +70,41 @@ export class SocketClient {
 
         this.ws.onopen = () => {
             console.log('WS Connected');
+            this.reconnectAttempts = 0;
             this.pending.forEach(cb => cb.resolve());
             this.pending = [];
+
+            if (this.lastJoinParams) {
+                this.send(this.lastJoinParams);
+            }
         };
 
-        this.ws.onclose = () => console.log('WS Disconnected');
+        this.ws.onclose = () => {
+            console.log('WS Disconnected');
+            this.ws = null;
+            this.scheduleReconnect();
+        };
 
         this.ws.onerror = (err) => {
             console.error('WS Error', err);
+            try { this.ws?.close(); } catch { /* ignore */ }
             this.pending.forEach(cb => cb.reject(new Error('WebSocket Connection Failed')));
             this.pending = [];
         };
+    }
+
+    private scheduleReconnect() {
+        if (this.reconnectTimeout) return;
+
+        // Exponential backoff: 1s, 2s, 4s, 8s, 16s, up to 30s
+        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+        console.log(`Scheduling WS reconnect in ${delay}ms... (Attempt ${this.reconnectAttempts + 1})`);
+
+        this.reconnectTimeout = window.setTimeout(() => {
+            this.reconnectTimeout = null;
+            this.reconnectAttempts++;
+            this.connect();
+        }, delay);
     }
 
     waitForOpen(timeoutMs = 5000): Promise<void> {
@@ -90,17 +132,37 @@ export class SocketClient {
         });
     }
 
-    send(msg: object) {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify(msg));
-        } else {
-            console.warn('Socket not open, cannot send', msg);
+    send(msg: unknown) {
+        // We verify that the message is valid via the backend. If it's a join request, we cache it.
+        const typedMsg = msg as { type?: string; roomId?: string };
+        if (typedMsg.type === 'JOIN_ROOM') {
+            this.lastJoinParams = typedMsg;
         }
+
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            console.warn('Socket not open, dropping message');
+            return;
+        }
+
+        this.ws.send(JSON.stringify(msg));
     }
 
     subscribe(cb: (msg: unknown) => void) {
         this.listeners.add(cb);
         return () => { this.listeners.delete(cb); };
+    }
+
+    // Exposed for testing
+    disconnect() {
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
+        if (this.ws) {
+            this.ws.onclose = null; // prevent reconnect loop
+            try { this.ws.close(); } catch { /* ignore */ }
+            this.ws = null;
+        }
     }
 }
 
