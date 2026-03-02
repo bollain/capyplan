@@ -138,6 +138,9 @@ export class SocketClient {
         if (typedMsg.type === 'JOIN_ROOM') {
             this.lastJoinParams = typedMsg;
         }
+        if (typedMsg.type === 'LEAVE_ROOM') {
+            this.lastJoinParams = null;
+        }
 
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
             console.warn('Socket not open, dropping message');

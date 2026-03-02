@@ -96,6 +96,7 @@ interface ServerParticipant {
 
 interface ServerRoomState extends Omit<RoomState, 'participants'> {
     participants: ServerParticipant[];
+    activeSockets: Set<WebSocket>;
 }
 
 // In-memory store: RoomID -> ServerRoomState
@@ -138,11 +139,14 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
                     roomName: roomName, // Store optional roomName
                     leaderId: clientId, // Use clientId as leaderId
                     participants: [],
+                    activeSockets: new Set(),
                     phase: RoomPhase.VOTING,
                     estimationMode: EstimationMode.PERT,
                 };
                 rooms.set(roomId, room);
             }
+
+            room.activeSockets.add(ws);
 
             // Check if participant exists (reconnection)
             const existingParticipant = room.participants.find(p => p.id === clientId);
@@ -327,6 +331,7 @@ function handleLeaveRoom(ws: WebSocket) {
         // Just clear this socket's association.
         state.roomId = undefined;
         state.userId = undefined;
+        room.activeSockets.delete(ws);
         return;
     }
 
@@ -358,6 +363,7 @@ function handleLeaveRoom(ws: WebSocket) {
     // If we clear it, RECONNECT (JOIN_ROOM) works fine because it sets it again.
     state.roomId = undefined;
     state.userId = undefined;
+    room.activeSockets.delete(ws);
 }
 
 function handleSocketClose(ws: WebSocket) {
@@ -397,21 +403,28 @@ function cleanupParticipant(roomId: string, userId: string) {
     }
 }
 
+function getSafeRoomState(room: ServerRoomState): RoomState {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { activeSockets, ...safeRoom } = room;
+
+    return {
+        ...safeRoom,
+        participants: room.participants.map(p => ({
+            id: p.id,
+            name: p.name,
+            connected: p.connected,
+            isSpectator: p.isSpectator,
+        }))
+    };
+}
+
 function sendSnapshotTo(ws: WebSocket, roomId: string) {
     const room = rooms.get(roomId);
     if (!room) return;
 
     const msg: ServerMessage = {
         type: 'ROOM_SNAPSHOT',
-        state: {
-            ...room,
-            participants: room.participants.map(p => ({
-                id: p.id,
-                name: p.name,
-                connected: p.connected,
-                isSpectator: p.isSpectator,
-            }))
-        },
+        state: getSafeRoomState(room)
     };
 
     if (ws.readyState === WebSocket.OPEN) {
@@ -425,23 +438,14 @@ function broadcastSnapshot(roomId: string, excludeWs?: WebSocket) {
 
     const msg: ServerMessage = {
         type: 'ROOM_SNAPSHOT',
-        state: {
-            ...room,
-            // Strip server-only fields when sending to client
-            participants: room.participants.map(p => ({
-                id: p.id,
-                name: p.name,
-                connected: p.connected,
-                isSpectator: p.isSpectator,
-            }))
-        },
+        state: getSafeRoomState(room)
     };
 
     const payload = JSON.stringify(msg);
 
-    // Inefficient broadcast O(N) over all sockets, good enough for toy app
-    for (const [ws, state] of socketMap.entries()) {
-        if (state.roomId === roomId && ws.readyState === WebSocket.OPEN && ws !== excludeWs) {
+    // Optimized broadcast: Only loop over sockets known to be in this room
+    for (const ws of room.activeSockets) {
+        if (ws !== excludeWs && ws.readyState === WebSocket.OPEN) {
             ws.send(payload);
         }
     }
@@ -460,8 +464,11 @@ function broadcastEvent(roomId: string, event: 'REVEALED', payload: { userName: 
     };
     const data = JSON.stringify(msg);
 
-    for (const [ws, state] of socketMap.entries()) {
-        if (state.roomId === roomId && ws.readyState === WebSocket.OPEN) {
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    for (const ws of room.activeSockets) {
+        if (ws.readyState === WebSocket.OPEN) {
             ws.send(data);
         }
     }
