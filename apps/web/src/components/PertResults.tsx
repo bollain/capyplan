@@ -10,7 +10,7 @@ interface Props {
 
 export default function PertResults({ results, currentEstimates, participants }: Props) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { avgScore, teamStdDev, disagreementLevel, disagreementColor } = calculateTeamStats(results as any);
+    const { avgScore, teamStdDev, disagreementLevel } = calculateTeamStats(results as any);
     const [showGuide, setShowGuide] = useState(false);
 
     return (
@@ -48,11 +48,11 @@ export default function PertResults({ results, currentEstimates, participants }:
                                 </td>
                                 <td className="pert-stddev-cell">
                                     <div className="stat-value-row">
-                                        <span className="risk-value" style={{ color: risk.color }}>
+                                        <span className={`risk-value risk-text-${risk.level.toLowerCase()}`}>
                                             ±{Number(result.stdDev).toFixed(2)}
                                         </span>
                                         {risk.level !== 'Low' && (
-                                            <span className="risk-badge" style={{ backgroundColor: risk.color }}>
+                                            <span className={`risk-badge risk-bg-${risk.level.toLowerCase()}`}>
                                                 {risk.level}
                                             </span>
                                         )}
@@ -73,11 +73,11 @@ export default function PertResults({ results, currentEstimates, participants }:
                 <div className="stat-block align-right">
                     <span className="stat-label">Disagreement</span>
                     <div className="stat-value-row">
-                        <span className="stat-value-small" style={{ color: disagreementColor }}>
+                        <span className={`stat-value-small risk-text-${disagreementLevel.toLowerCase()}`}>
                             ±{teamStdDev}
                         </span>
                         {disagreementLevel !== 'Low' && (
-                            <span className="risk-badge" style={{ backgroundColor: disagreementColor }}>
+                            <span className={`risk-badge risk-bg-${disagreementLevel.toLowerCase()}`}>
                                 {disagreementLevel}
                             </span>
                         )}

@@ -113,6 +113,7 @@ describe('Home Page', () => {
                 name: 'Alice',
                 isSpectator: false,
                 roomName: 'My Room',
+                estimationMode: 'PERT'
             },
         });
     });

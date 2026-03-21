@@ -61,7 +61,7 @@ export default function PertVoting({ availableEstimates, onSubmit, onRetract }: 
     );
 
     return (
-        <div style={{ marginTop: '1rem' }}>
+        <div className="mt-1">
             {renderRow('Optimistic', optimistic, setOptimistic)}
             {renderRow('Most Likely', mostLikely, setMostLikely)}
             {renderRow('Pessimistic', pessimistic, setPessimistic)}

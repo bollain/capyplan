@@ -27,6 +27,19 @@ export function calculatePert(payload: EstimatePayload): EstimationResult {
     };
 }
 
+export interface PokerEstimatePayload {
+    value: number;
+}
+
+/**
+ * Calculates standard Planning Poker estimate
+ */
+export function calculatePoker(payload: PokerEstimatePayload): EstimationResult {
+    return {
+        score: payload.value,
+    };
+}
+
 /**
  * Strategy pattern for future modes (e.g., Fibonacci, Planning Poker)
  */
@@ -34,6 +47,8 @@ export function calculateEstimate(mode: EstimationMode, payload: unknown): Estim
     switch (mode) {
         case EstimationMode.PERT:
             return calculatePert(payload as EstimatePayload);
+        case EstimationMode.POKER:
+            return calculatePoker(payload as PokerEstimatePayload);
         default:
             throw new Error(`Unsupported estimation mode: ${mode}`);
     }

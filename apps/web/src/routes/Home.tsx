@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../lib/socket.ts';
+import { EstimationMode } from '@capyplan/protocol';
 import logo from '../assets/capyplan.png';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -9,6 +10,7 @@ export default function Home() {
     const [isSpectator, setIsSpectator] = useState(false);
     const [roomInput, setRoomInput] = useState(''); // Can be name (for create) or ID (for join)
     const [isCreating, setIsCreating] = useState(true);
+    const [estimationMode, setEstimationMode] = useState<EstimationMode>(EstimationMode.PERT);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -35,21 +37,22 @@ export default function Home() {
             state: {
                 name,
                 isSpectator,
-                roomName // Pass roomName to the route state
+                roomName, // Pass roomName to the route state
+                estimationMode: isCreating ? estimationMode : undefined
             }
         });
     };
 
     return (
         <div className="container home-container">
-            <div style={{ position: 'absolute', top: '1rem', right: '1.75rem' }}>
+            <div className="theme-toggle-container">
                 <ThemeToggle />
             </div>
             <div className="logo-header">
                 <img src={logo} alt="CapyPlan Logo" className="logo-img" />
                 <h1>CapyPlan</h1>
             </div>
-            <p className="text-center" style={{ marginBottom: '0.5rem', marginTop: '0.5rem' }}>Collaborative Estimation Tool</p>
+            <p className="text-center my-0-5">Collaborative Estimation Tool</p>
 
             <div className="card join-card">
                 <form onSubmit={handleJoin} className="join-form">
@@ -72,23 +75,50 @@ export default function Home() {
                             placeholder={isCreating ? "Sprint Planning 34" : "paste-room-id-here"}
                             className="form-input"
                         />
-                        <div style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
+                        <div className="form-subtext">
                             {isCreating ? (
-                                <span onClick={() => setIsCreating(false)} style={{ cursor: 'pointer', textDecoration: 'underline', color: '#888' }}>
+                                <span onClick={() => setIsCreating(false)} className="form-link">
                                     or join existing room by ID
                                 </span>
                             ) : (
-                                <span onClick={() => setIsCreating(true)} style={{ cursor: 'pointer', textDecoration: 'underline', color: '#888' }}>
+                                <span onClick={() => setIsCreating(true)} className="form-link">
                                     or create a new room
                                 </span>
                             )}
                         </div>
                     </div>
+                    {isCreating && (
+                        <div className="form-group">
+                            <label>Voting Method</label>
+                            <div className="radio-group">
+                                <label className="radio-label">
+                                    <input 
+                                        type="radio" 
+                                        name="estimationMode" 
+                                        value={EstimationMode.PERT}
+                                        checked={estimationMode === EstimationMode.PERT}
+                                        onChange={() => setEstimationMode(EstimationMode.PERT)}
+                                    />
+                                    PERT (3-point)
+                                </label>
+                                <label className="radio-label">
+                                    <input 
+                                        type="radio" 
+                                        name="estimationMode" 
+                                        value={EstimationMode.POKER}
+                                        checked={estimationMode === EstimationMode.POKER}
+                                        onChange={() => setEstimationMode(EstimationMode.POKER)}
+                                    />
+                                    Planning Poker
+                                </label>
+                            </div>
+                        </div>
+                    )}
                     <div className="spectator-toggle" onClick={() => setIsSpectator(!isSpectator)}>
                         <div className={`toggle-track ${isSpectator ? 'active' : ''}`}>
                             <div className={`toggle-thumb ${isSpectator ? 'active' : ''}`} />
                         </div>
-                        <label style={{ cursor: 'pointer', fontSize: '1rem' }}>Join as Spectator</label>
+                        <label className="spectator-label">Join as Spectator</label>
                     </div>
                     <button type="submit" disabled={!name || !roomInput}>
                         {isCreating ? 'Create Room' : 'Join Room'}

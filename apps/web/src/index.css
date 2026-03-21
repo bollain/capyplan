@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   /* Core Colors */
   --color-primary: #f89c1c;
   /* Slightly desaturated from #ff9f1c */
@@ -44,6 +45,7 @@
 }
 
 [data-theme="light"] {
+  color-scheme: light;
   --color-bg: #f5f5f5;
   --color-surface: #ffffff;
   --color-surface-hover: #f0f0f0;
@@ -97,13 +99,18 @@ button:disabled {
   cursor: not-allowed;
 }
 
-input {
+input:not([type="radio"]):not([type="checkbox"]) {
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid var(--color-border);
   background-color: var(--bg-input);
   color: var(--color-text);
   font-size: 1rem;
+}
+
+input[type="radio"], 
+input[type="checkbox"] {
+  cursor: pointer;
 }
 
 .container {
@@ -524,6 +531,33 @@ input {
   box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
+.voting-card.readonly {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Poker Results */
+.poker-results-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1rem;
+  justify-content: center;
+}
+
+.poker-result-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.poker-result-participant {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
 /* PERT Voting Row */
 .pert-row {
   margin-bottom: 1.5rem;
@@ -800,9 +834,27 @@ input {
   background-color: var(--color-risk-high-bg);
 }
 
+.risk-text-high {
+  color: var(--color-risk-high-text);
+}
+
+.risk-bg-high {
+  background-color: var(--color-risk-high-text);
+  color: #fff;
+}
+
 .risk-medium {
   border-color: var(--color-risk-medium-border);
   background-color: var(--color-risk-medium-bg);
+}
+
+.risk-text-medium {
+  color: var(--color-risk-medium-text);
+}
+
+.risk-bg-medium {
+  background-color: var(--color-risk-medium-text);
+  color: #fff;
 }
 
 .risk-low {
@@ -810,19 +862,14 @@ input {
   background-color: var(--color-risk-low-bg);
 }
 
-.risk-text-high {
-  color: var(--color-risk-high-text);
-}
-
-.risk-text-medium {
-  color: var(--color-risk-medium-text);
-}
-
 .risk-text-low {
   color: var(--color-risk-low-text);
 }
 
-
+.risk-bg-low {
+  background-color: var(--color-risk-low-text);
+  color: #fff;
+}
 .your-vote-stat {
   display: flex;
   flex-direction: column;
@@ -1518,7 +1565,6 @@ input {
     transform: translateY(-10px);
   }
 }
-}
 
 .share-btn:hover {
   background-color: var(--color-primary);
@@ -1559,16 +1605,107 @@ input {
   color: var(--color-text);
   padding: 0.5rem;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .theme-toggle-btn:hover {
-  background-color: var(--color-pill-hover);
+  background: var(--color-surface-hover);
+  border-color: var(--color-border);
+}
+
+/* Utilities */
+.stat-footer.center {
+  justify-content: center;
+}
+
+.stat-block.center {
+  align-items: center;
+}
+
+.unsupported-mode {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.deck-selector-options {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.deck-selector-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.stage-instruction {
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.mt-1 {
+  margin-top: 1rem;
+}
+
+.mb-1-5 {
+  margin-bottom: 1.5rem;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.full-column {
+  grid-column: 1 / -1;
+}
+
+.text-xs {
+  font-size: 0.8rem;
+}
+
+.theme-toggle-container {
+  position: absolute;
+  top: 1rem;
+  right: 1.75rem;
+}
+
+.my-0-5 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-subtext {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.form-link {
+  cursor: pointer;
+  text-decoration: underline;
+  color: var(--color-text-muted);
+}
+
+.radio-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.spectator-label {
+  cursor: pointer;
+  font-size: 1rem;
 }

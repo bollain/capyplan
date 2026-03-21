@@ -1,20 +1,38 @@
 import { getRiskLevel } from "../lib/pert";
 
+import { EstimationMode } from "@capyplan/protocol";
+
 interface Props {
     result?: {
         score: number;
         stdDev?: number;
     } | null;
     estimate?: {
-        optimistic: number;
-        mostLikely: number;
-        pessimistic: number;
+        optimistic?: number;
+        mostLikely?: number;
+        pessimistic?: number;
+        value?: number;
     } | null;
     phase: string;
+    mode: EstimationMode;
 }
 
-export default function YourVote({ result, estimate, phase }: Props) {
+export default function YourVote({ result, estimate, phase, mode }: Props) {
     if (phase !== 'REVEALED' || !result) return null;
+
+    if (mode === EstimationMode.POKER) {
+        return (
+            <div className="card your-vote-card">
+                <h3>Your Vote</h3>
+                <div className="your-vote-primary">
+                    <div className="your-vote-stat full-column">
+                        <span className="your-vote-score">{result.score}</span>
+                        <span className="your-vote-label">Card</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
 
     const risk = getRiskLevel(Number(result.stdDev));

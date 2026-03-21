@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { socket } from '../lib/socket';
-import { RoomState, ServerMessage } from '@capyplan/protocol';
+import { RoomState, ServerMessage, EstimationMode } from '@capyplan/protocol';
 import logo from '../assets/capyplan.png';
 import RoomHeader from '../components/RoomHeader';
 import Stage from '../components/Stage';
@@ -11,6 +11,7 @@ import DeckSelector from '../components/DeckSelector';
 import YourVote from '../components/YourVote';
 import JoinRoom from '../components/JoinRoom';
 import Toast from '../components/Toast';
+import { DEFAULT_DECK } from '../constants/decks';
 
 function getOrCreateClientId(): string {
     let clientId = localStorage.getItem('capyplan_client_id');
@@ -87,7 +88,8 @@ export default function Room() {
                         roomName: location.state?.roomName, // Pass roomName if available
                         name,
                         clientId,
-                        isSpectator
+                        isSpectator,
+                        estimationMode: location.state?.estimationMode
                     });
                 }
             })
@@ -171,7 +173,7 @@ export default function Room() {
 
     // Safety check for myClientId
     const myResult = (myClientId && roomState.results) ? (roomState.results[myClientId] as { score: number; stdDev?: number }) : null;
-    const myEstimate = (myClientId && roomState.currentEstimates) ? (roomState.currentEstimates[myClientId] as { optimistic: number; mostLikely: number; pessimistic: number }) : null;
+    const myEstimate = (myClientId && roomState.currentEstimates) ? (roomState.currentEstimates[myClientId] as { optimistic?: number; mostLikely?: number; pessimistic?: number; value?: number; }) : null;
 
     const voteCount = roomState.currentEstimates ? Object.keys(roomState.currentEstimates).length : 0;
     const totalParticipants = roomState.participants ? roomState.participants.filter(p => !p.isSpectator).length : 0;
@@ -230,6 +232,10 @@ export default function Room() {
                                     onUpdateDeck={(availableEstimates) =>
                                         socket.send({ type: 'UPDATE_ROOM_SETTINGS', availableEstimates })
                                     }
+                                    currentMode={roomState.estimationMode}
+                                    onUpdateMode={(estimationMode: EstimationMode) =>
+                                        socket.send({ type: 'UPDATE_ROOM_SETTINGS', availableEstimates: roomState.availableEstimates || DEFAULT_DECK, estimationMode })
+                                    }
                                 />
                             </>
                         )}
@@ -246,6 +252,7 @@ export default function Room() {
                             result={myResult}
                             estimate={myEstimate}
                             phase={roomState.phase}
+                            mode={roomState.estimationMode}
                         />
                     </aside>
                 </div>

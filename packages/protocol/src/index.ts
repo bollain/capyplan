@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 export const EstimationMode = {
     PERT: 'PERT',
+    POKER: 'POKER',
 } as const;
 
 export type EstimationMode = (typeof EstimationMode)[keyof typeof EstimationMode];
@@ -44,6 +45,7 @@ export const JoinRoomSchema = z.object({
     name: z.string(),
     clientId: z.string(),
     isSpectator: z.boolean(),
+    estimationMode: z.nativeEnum(EstimationMode).optional(),
 });
 
 export const LeaveRoomSchema = z.object({
@@ -76,6 +78,7 @@ export const RequestNextVoteSchema = z.object({
 export const UpdateRoomSettingsSchema = z.object({
     type: z.literal('UPDATE_ROOM_SETTINGS'),
     availableEstimates: z.array(z.number()),
+    estimationMode: z.nativeEnum(EstimationMode).optional(),
 });
 
 export const RetractVoteSchema = z.object({

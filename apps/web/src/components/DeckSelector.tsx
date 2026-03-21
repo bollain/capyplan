@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { PRESETS, DEFAULT_DECK } from '../constants/decks';
+import { EstimationMode } from '@capyplan/protocol';
 
 interface Props {
     currentDeck: number[] | undefined;
     onUpdateDeck: (estimates: number[]) => void;
+    currentMode: EstimationMode;
+    onUpdateMode: (mode: EstimationMode) => void;
 }
 
 
-export default function DeckSelector({ currentDeck, onUpdateDeck }: Props) {
+export default function DeckSelector({ currentDeck, onUpdateDeck, currentMode, onUpdateMode }: Props) {
     const [customInput, setCustomInput] = useState('');
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -44,7 +47,7 @@ export default function DeckSelector({ currentDeck, onUpdateDeck }: Props) {
         <div className="card deck-config-card">
             <div className="deck-panel">
                 <div className="deck-panel-header">
-                    <h4 className="deck-panel-title">Choose Estimation Deck</h4>
+                    <h4 className="deck-panel-title">Room Settings</h4>
                     <button
                         className="deck-close-btn"
                         onClick={() => setIsExpanded(false)}
@@ -52,6 +55,29 @@ export default function DeckSelector({ currentDeck, onUpdateDeck }: Props) {
                     >
                         &times;
                     </button>
+                </div>
+
+                <div className="deck-selector-options">
+                    <label className="deck-selector-label">
+                        <input 
+                            type="radio" 
+                            name="estimationMode" 
+                            value={EstimationMode.PERT}
+                            checked={currentMode === EstimationMode.PERT}
+                            onChange={() => onUpdateMode(EstimationMode.PERT)}
+                        />
+                        PERT (3-point)
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input 
+                            type="radio" 
+                            name="deckEstimationMode" 
+                            value={EstimationMode.POKER}
+                            checked={currentMode === EstimationMode.POKER}
+                            onChange={() => onUpdateMode(EstimationMode.POKER)}
+                        />
+                        Planning Poker
+                    </label>
                 </div>
 
                 <div className="deck-presets-grid">

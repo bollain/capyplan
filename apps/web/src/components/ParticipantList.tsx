@@ -26,7 +26,7 @@ export default function ParticipantList({ participants, currentUserName, leaderI
                                 <span>{p.name} {isMe && '(You)'}</span>
                                 {p.id === leaderId && <span title="Leader">👑</span>}
                                 {p.isSpectator && <span title="Spectator">👀</span>}
-                                {p.connected === false && <span title="Disconnected" style={{ fontSize: '0.8rem' }}>🔌</span>}
+                                {p.connected === false && <span title="Disconnected" className="text-xs">🔌</span>}
                             </div>
                             {/* Status Icons */}
                             <div className="status-icon">

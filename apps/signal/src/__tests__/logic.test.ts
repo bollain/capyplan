@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculatePert, EstimatePayload } from '../logic';
+import { calculatePert, calculatePoker, EstimatePayload, PokerEstimatePayload } from '../logic';
 
 describe('Signal Logic', () => {
     describe('calculatePert', () => {
@@ -47,6 +47,17 @@ describe('Signal Logic', () => {
             // (1 + 20 + 20) / 6 = 41 / 6 = 6.833 -> 6.83
             const result = calculatePert(payload);
             expect(result.score).toBe(6.83);
+        });
+    });
+
+    describe('calculatePoker', () => {
+        it('calculates expected score correctly', () => {
+            const payload: PokerEstimatePayload = {
+                value: 5
+            };
+            const result = calculatePoker(payload);
+            expect(result.score).toBe(5);
+            expect(result.stdDev).toBeUndefined();
         });
     });
 });

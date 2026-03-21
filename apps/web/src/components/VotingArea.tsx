@@ -1,5 +1,6 @@
 import { EstimationMode } from '@capyplan/protocol';
 import PertVoting from './PertVoting';
+import PokerVoting from './PokerVoting';
 import { DEFAULT_DECK } from '../constants/decks';
 
 interface Props {
@@ -27,8 +28,18 @@ export default function VotingArea({ mode, availableEstimates, onSubmit, onRetra
         );
     }
 
+    if (mode === EstimationMode.POKER) {
+        return (
+            <PokerVoting
+                availableEstimates={estimates}
+                onSubmit={onSubmit}
+                onRetract={onRetract}
+            />
+        );
+    }
+
     return (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#aaa' }}>
+        <div className="unsupported-mode">
             Unsupported Estimation Mode: {mode}
         </div>
     );
