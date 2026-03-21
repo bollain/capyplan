@@ -46,6 +46,7 @@ export const JoinRoomSchema = z.object({
     clientId: z.string(),
     isSpectator: z.boolean(),
     estimationMode: z.nativeEnum(EstimationMode).optional(),
+    deck: z.array(z.number()).optional(),
 });
 
 export const LeaveRoomSchema = z.object({

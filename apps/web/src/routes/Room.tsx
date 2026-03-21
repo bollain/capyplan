@@ -82,6 +82,19 @@ export default function Room() {
         socket.waitForOpen()
             .then(() => {
                 if (mounted) {
+                    let savedDeck: number[] | undefined;
+                    try {
+                        const stored = localStorage.getItem('capyplan_deck');
+                        if (stored) {
+                            const parsed = JSON.parse(stored);
+                            if (Array.isArray(parsed) && parsed.every(val => typeof val === 'number')) {
+                                savedDeck = parsed;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse capyplan_deck', e);
+                    }
+
                     socket.send({
                         type: 'JOIN_ROOM',
                         roomId,
@@ -89,7 +102,8 @@ export default function Room() {
                         name,
                         clientId,
                         isSpectator,
-                        estimationMode: location.state?.estimationMode
+                        estimationMode: location.state?.estimationMode,
+                        deck: savedDeck
                     });
                 }
             })
@@ -229,9 +243,10 @@ export default function Room() {
                             <>
                                 <DeckSelector
                                     currentDeck={roomState.availableEstimates}
-                                    onUpdateDeck={(availableEstimates) =>
-                                        socket.send({ type: 'UPDATE_ROOM_SETTINGS', availableEstimates })
-                                    }
+                                    onUpdateDeck={(availableEstimates) => {
+                                        localStorage.setItem('capyplan_deck', JSON.stringify(availableEstimates));
+                                        socket.send({ type: 'UPDATE_ROOM_SETTINGS', availableEstimates });
+                                    }}
                                     currentMode={roomState.estimationMode}
                                     onUpdateMode={(estimationMode: EstimationMode) =>
                                         socket.send({ type: 'UPDATE_ROOM_SETTINGS', availableEstimates: roomState.availableEstimates || DEFAULT_DECK, estimationMode })

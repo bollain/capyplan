@@ -129,7 +129,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
 
     switch (message.type) {
         case 'JOIN_ROOM': {
-            const { roomId, roomName, name, clientId, isSpectator, estimationMode } = message;
+            const { roomId, roomName, name, clientId, isSpectator, estimationMode, deck } = message;
 
             let room = rooms.get(roomId);
             if (!room) {
@@ -142,6 +142,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
                     activeSockets: new Set(),
                     phase: RoomPhase.VOTING,
                     estimationMode: estimationMode || EstimationMode.PERT,
+                    availableEstimates: deck,
                 };
                 rooms.set(roomId, room);
             }
