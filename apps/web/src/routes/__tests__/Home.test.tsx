@@ -118,6 +118,31 @@ describe('Home Page', () => {
         });
     });
 
+    it('navigates to room with Planning Poker selected', () => {
+        renderHome();
+
+        const nameInput = screen.getByPlaceholderText('Capybara Joe');
+        const roomInput = screen.getByPlaceholderText('Sprint Planning 34');
+
+        fireEvent.change(nameInput, { target: { value: 'Alice' } });
+        fireEvent.change(roomInput, { target: { value: 'My Room' } });
+
+        // Select Poker
+        const pokerRadio = screen.getByLabelText('Planning Poker');
+        fireEvent.click(pokerRadio);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Create Room' }));
+
+        expect(mockNavigate).toHaveBeenCalledWith('/room/mock-uuid-1234', {
+            state: {
+                name: 'Alice',
+                isSpectator: false,
+                roomName: 'My Room',
+                estimationMode: 'POKER'
+            },
+        });
+    });
+
     it('navigates to room on join', () => {
         renderHome();
 

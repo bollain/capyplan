@@ -22,7 +22,6 @@ export default function PokerVoting({ availableEstimates, onSubmit, onRetract }:
 
     return (
         <div className="card poker-voting-card">
-            <h3 className="card-title text-center mb-1-5">Select your estimate</h3>
             <div className="card-grid justify-center">
                 {availableEstimates.map((val) => (
                     <VotingCard
