@@ -301,6 +301,12 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             if (message.estimationMode) {
                 room.estimationMode = message.estimationMode;
             }
+            
+            // Core Logic: Automatically reset voting rounds if rules change
+            room.phase = RoomPhase.VOTING;
+            room.currentEstimates = undefined;
+            room.results = undefined;
+
             broadcastSnapshot(socketState.roomId);
             break;
         }

@@ -45,7 +45,15 @@ export default function RoomHeader({ roomId, roomName, estimationMode, phase, us
                                 {estimationMode}
                             </a>
                         ) : (
-                            estimationMode
+                            <a
+                                href="https://en.wikipedia.org/wiki/Planning_poker"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="meta-link"
+                                title="Learn about Planning Poker on Wikipedia"
+                            >
+                                {estimationMode}
+                            </a>
                         )}
                     </span>
                 </div>
