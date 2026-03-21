@@ -23,6 +23,7 @@ export default function ParticipantList({ participants, currentUserName, leaderI
                     return (
                         <li key={p.id} className={itemClass}>
                             <div className="participant-info">
+                                <span className="user-avatar participant-emoji">{p.emoji || '🐹'}</span>
                                 <span>{p.name} {isMe && '(You)'}</span>
                                 {p.id === leaderId && <span title="Leader">👑</span>}
                                 {p.isSpectator && <span title="Spectator">👀</span>}

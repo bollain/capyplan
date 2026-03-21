@@ -88,6 +88,7 @@ export function startServer(port: number = 3001): WebSocketServer {
 interface ServerParticipant {
     id: string; // This is the clientId
     name: string;
+    emoji?: string;
     isSpectator: boolean;
     connected: boolean;
     lastSeen: number;
@@ -129,7 +130,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
 
     switch (message.type) {
         case 'JOIN_ROOM': {
-            const { roomId, roomName, name, clientId, isSpectator, estimationMode, deck } = message;
+            const { roomId, roomName, name, emoji, clientId, isSpectator, estimationMode, deck } = message;
 
             let room = rooms.get(roomId);
             if (!room) {
@@ -156,6 +157,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
                 // Reconnect
                 existingParticipant.connected = true;
                 existingParticipant.name = name; // Update name just in case
+                if (emoji !== undefined) existingParticipant.emoji = emoji;
                 existingParticipant.lastSeen = Date.now();
 
                 // Cancel pending removal if any
@@ -168,6 +170,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
                 room.participants.push({
                     id: clientId,
                     name,
+                    emoji,
                     isSpectator,
                     connected: true,
                     lastSeen: Date.now()
@@ -305,7 +308,21 @@ function handleMessage(ws: WebSocket, message: ClientMessage) {
             // Core Logic: Automatically reset voting rounds if rules change
             room.phase = RoomPhase.VOTING;
             room.currentEstimates = undefined;
-            room.results = undefined;
+            broadcastSnapshot(socketState.roomId);
+            break;
+        }
+
+        case 'UPDATE_PARTICIPANT': {
+            if (!socketState.roomId) return;
+            const room = rooms.get(socketState.roomId);
+            if (!room) return;
+
+            const participant = room.participants.find(p => p.id === socketState.userId);
+            if (!participant) return;
+
+            if (message.name !== undefined) participant.name = message.name;
+            if (message.emoji !== undefined) participant.emoji = message.emoji;
+            if (message.isSpectator !== undefined) participant.isSpectator = message.isSpectator;
 
             broadcastSnapshot(socketState.roomId);
             break;
@@ -422,6 +439,7 @@ function getSafeRoomState(room: ServerRoomState): RoomState {
         participants: room.participants.map(p => ({
             id: p.id,
             name: p.name,
+            emoji: p.emoji,
             connected: p.connected,
             isSpectator: p.isSpectator,
         }))

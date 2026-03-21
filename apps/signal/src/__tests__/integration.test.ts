@@ -96,4 +96,52 @@ describe('Signal Server Integration', () => {
 
         ws.close();
     });
+
+    it('updates participant details on UPDATE_PARTICIPANT', async () => {
+        const ws = new WebSocket(serverUrl);
+        await new Promise(resolve => ws.on('open', resolve));
+        const uniqueRoom = `test-participant-${Date.now()}`;
+
+        // 1. Join room
+        ws.send(JSON.stringify({
+            type: 'JOIN_ROOM',
+            roomId: uniqueRoom,
+            name: 'OldName',
+            emoji: '🐹',
+            clientId: 'user-123',
+            isSpectator: false,
+            estimationMode: 'PERT'
+        }));
+
+        // Wait for first snapshot
+        let snapshot = await new Promise<RoomSnapshotMessage>(resolve => {
+            ws.once('message', (data) => resolve(JSON.parse(data.toString())));
+        });
+        
+        let me = snapshot.state.participants.find(p => p.id === 'user-123');
+        expect(me?.name).toBe('OldName');
+        expect(me?.emoji).toBe('🐹');
+        expect(me?.isSpectator).toBe(false);
+
+        // 2. Update participant
+        ws.send(JSON.stringify({
+            type: 'UPDATE_PARTICIPANT',
+            name: 'NewName',
+            emoji: '😎',
+            isSpectator: true
+        }));
+
+        // Wait for updated snapshot
+        snapshot = await new Promise<RoomSnapshotMessage>(resolve => {
+            ws.once('message', (data) => resolve(JSON.parse(data.toString())));
+        });
+
+        me = snapshot.state.participants.find(p => p.id === 'user-123');
+        expect(me?.name).toBe('NewName');
+        expect(me?.emoji).toBe('😎');
+        expect(me?.isSpectator).toBe(true);
+        
+        ws.close();
+    });
 });
+

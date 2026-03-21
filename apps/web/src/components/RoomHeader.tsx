@@ -1,8 +1,10 @@
-import { RoomPhase, EstimationMode } from '@capyplan/protocol';
+import { useState } from 'react';
+import { RoomPhase, EstimationMode, Participant } from '@capyplan/protocol';
 import { Link } from 'react-router-dom';
 import logo from '../assets/capyplan.png';
 import SessionStatus from './SessionStatus';
 import ThemeToggle from './ThemeToggle';
+import UserSettingsModal from './UserSettingsModal';
 
 interface Props {
     roomId: string;
@@ -13,9 +15,12 @@ interface Props {
     voteCount: number;
     totalParticipants: number;
     onInvite: () => void;
+    currentUser?: Participant;
+    onUpdateParticipant?: (name: string, emoji: string, isSpectator: boolean) => void;
 }
 
-export default function RoomHeader({ roomId, roomName, estimationMode, phase, userName, voteCount, totalParticipants, onInvite }: Props) {
+export default function RoomHeader({ roomId, roomName, estimationMode, phase, userName, voteCount, totalParticipants, onInvite, currentUser, onUpdateParticipant }: Props) {
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     return (
         <header className="room-header">
 
@@ -60,10 +65,32 @@ export default function RoomHeader({ roomId, roomName, estimationMode, phase, us
             </div>
 
             <div className="header-actions">
-                <div className="user-pill">
-                    <span className="user-avatar">🐹</span>
-                    <span className="user-name">{userName}</span>
-                </div>
+                {currentUser && onUpdateParticipant ? (
+                    <>
+                        <button 
+                            className="user-settings-pill-btn" 
+                            onClick={() => setIsSettingsOpen(true)}
+                            title="User Settings"
+                        >
+                            <div className="user-pill">
+                                <span className="user-avatar">{currentUser.emoji || '🐹'}</span>
+                                <span className="user-name">{currentUser.name}</span>
+                            </div>
+                        </button>
+                        {isSettingsOpen && (
+                            <UserSettingsModal
+                                onClose={() => setIsSettingsOpen(false)}
+                                currentUser={currentUser}
+                                onSave={onUpdateParticipant}
+                            />
+                        )}
+                    </>
+                ) : (
+                    <div className="user-pill">
+                        <span className="user-avatar">🐹</span>
+                        <span className="user-name">{userName}</span>
+                    </div>
+                )}
 
                 <SessionStatus
                     phase={phase}

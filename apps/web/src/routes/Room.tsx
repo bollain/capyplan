@@ -184,6 +184,7 @@ export default function Room() {
 
     const myClientId = localStorage.getItem('capyplan_client_id');
     const isLeader = roomState.leaderId === myClientId;
+    const currentUser = roomState.participants.find(p => p.id === myClientId);
 
     // Safety check for myClientId
     const myResult = (myClientId && roomState.results) ? (roomState.results[myClientId] as { score: number; stdDev?: number }) : null;
@@ -214,6 +215,13 @@ export default function Room() {
                 voteCount={voteCount}
                 totalParticipants={totalParticipants}
                 onInvite={handleShare}
+                currentUser={currentUser}
+                onUpdateParticipant={(newName, newEmoji, newSpectator) => {
+                    localStorage.setItem('capyplan_username', newName);
+                    setName(newName);
+                    setIsSpectator(newSpectator);
+                    socket.send({ type: 'UPDATE_PARTICIPANT', name: newName, emoji: newEmoji, isSpectator: newSpectator });
+                }}
             />
             <div className="container">
                 <div className="room-layout-grid">

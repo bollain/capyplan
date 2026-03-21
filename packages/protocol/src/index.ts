@@ -20,6 +20,7 @@ export type RoomPhase = (typeof RoomPhase)[keyof typeof RoomPhase];
 export interface Participant {
     id: string;
     name: string;
+    emoji?: string;
     connected?: boolean;
     isSpectator?: boolean;
 }
@@ -43,6 +44,7 @@ export const JoinRoomSchema = z.object({
     roomId: z.string(),
     roomName: z.string().optional(),
     name: z.string(),
+    emoji: z.string().optional(),
     clientId: z.string(),
     isSpectator: z.boolean(),
     estimationMode: z.nativeEnum(EstimationMode).optional(),
@@ -86,6 +88,13 @@ export const RetractVoteSchema = z.object({
     type: z.literal('RETRACT_VOTE'),
 });
 
+export const UpdateParticipantSchema = z.object({
+    type: z.literal('UPDATE_PARTICIPANT'),
+    name: z.string().optional(),
+    emoji: z.string().optional(),
+    isSpectator: z.boolean().optional(),
+});
+
 export const ClientMessageSchema = z.discriminatedUnion('type', [
     JoinRoomSchema,
     LeaveRoomSchema,
@@ -94,6 +103,7 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     RequestNextVoteSchema,
     UpdateRoomSettingsSchema,
     RetractVoteSchema,
+    UpdateParticipantSchema,
 ]);
 
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
@@ -109,7 +119,9 @@ export const RoomSnapshotSchema = z.object({
         participants: z.array(z.object({
             id: z.string(),
             name: z.string(),
-            connected: z.boolean().optional()
+            emoji: z.string().optional(),
+            connected: z.boolean().optional(),
+            isSpectator: z.boolean().optional()
         })),
         phase: z.nativeEnum(RoomPhase),
         estimationMode: z.nativeEnum(EstimationMode),
