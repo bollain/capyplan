@@ -1,11 +1,6 @@
 import { useState } from 'react';
 import { Participant } from '@capyplan/protocol';
-
-const EMOJI_CATEGORIES = {
-  Animals: ['🐹', '🦊', '🐶', '🐱', '🐻', '🦁', '🐯', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧'],
-  Faces: ['😀', '😅', '😂', '😍', '😎', '🤪', '🤓', '🥳', '🤯', '😴'],
-  Food: ['🍎', '🍕', '🍔', '🌮', '🍩', '🍦', '🍉', '🍓', '🥑', '🥦']
-};
+import { EMOJI_CATEGORIES } from '../constants/emojis';
 
 interface Props {
   onClose: () => void;
